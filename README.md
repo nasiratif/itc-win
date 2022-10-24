@@ -8,6 +8,6 @@ I decided to open-source this program so that anyone can contribute to it, like 
 
 To setup ITC, you'll need to have a few Python modules already installed, like Pyperclip, Tkinter, Keyboard, ctypes and pyglet.
 
-You can build ITC in many different ways, though I prefer Auto PY to EXE. The Inno Setup source is also included (you will need to change directories however).
+You can build ITC in many different ways, though I prefer Auto PY to EXE. The Inno Setup source is also included (you will need to change the directories inside however).
 
 بارك الله فيك
