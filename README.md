@@ -9,3 +9,5 @@ I decided to open-source this program so that anyone can contribute to it, like 
 To setup ITC, you'll need to have a few Python modules already installed, like Pyperclip, Tkinter, Keyboard, ctypes and pyglet.
 
 To build ITC, you'll need Auto PY to EXE, and import the build config that is included in the source code.
+
+بارك الله فيك
