@@ -124,6 +124,13 @@ def btn11():
 keyboard.add_hotkey("alt+-", lambda : pyperclip.copy("جَزَاكَ ٱللَّٰهُ خَيْرًا"))
 keyboard.add_hotkey("alt+-", lambda : copyinf.config(text="Just copied: جَزَاكَ ٱللَّٰهُ خَيْرًا"))
 
+def btn12():
+    pyperclip.copy("بارك الله فيك")
+    copyinf.config(text="Just copied: بارك الله فيك")
+
+keyboard.add_hotkey("alt+=", lambda : pyperclip.copy("بارك الله فيك"))
+keyboard.add_hotkey("alt+=", lambda : copyinf.config(text="Just copied: بارك الله فيك"))
+
 # other functions
 
 def hoverh(event):
@@ -210,6 +217,12 @@ def hover11(event):
 def hover11l(event):
     btn11["bg"] = bg
 
+def hover12(event):
+    btn12["bg"] = hoverbg
+
+def hover12l(event):
+    btn12["bg"] = bg
+
 def hoverc(event):
     copyrighttxt["fg"] = "gray"
 
@@ -232,8 +245,9 @@ btn8_img = PhotoImage(file="resources/8.png")
 btn9_img = PhotoImage(file="resources/9.png")
 btn10_img = PhotoImage(file="resources/10.png")
 btn11_img = PhotoImage(file="resources/11.png")
+btn12_img = PhotoImage(file="resources/12.png")
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.1", bg=bg, fg="white", font=(regfont, 8))
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.2", bg=bg, fg="white", font=(regfont, 8))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
@@ -299,6 +313,11 @@ btn11.place(relx=0.30, rely=0.60)
 btn11.bind("<Enter>", hover11)
 btn11.bind("<Leave>", hover11l)
 
+btn12 = Button(root, command=btn12, image=btn12_img, bg=bg, activebackground=bg, borderwidth=0)
+btn12.place(relx=0.50, rely=0.62)
+btn12.bind("<Enter>", hover12)
+btn12.bind("<Leave>", hover12l)
+
 # check if the system is connected to the internet before checking for updates
 # otherwise itc would crash
 
@@ -314,7 +333,7 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 13
+itcversion = 14
 
 if isconnected == True:
     request = requests.get("http://nasiratif.net/dl/version.txt")
