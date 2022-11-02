@@ -7,7 +7,7 @@
 
 [Setup]
 AppName={#MyAppName}
-AppVersion=2.1
+AppVersion=2.2
 WizardStyle=modern
 WizardImageFile="D:\Islam\Text Copier\install.bmp"
 DefaultDirName={localappdata}\nasiratif\Islamic Text Copier
