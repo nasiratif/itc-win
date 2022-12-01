@@ -7,16 +7,16 @@
 
 [Setup]
 AppName={#MyAppName}
-AppVersion=2.2
+AppVersion=2.3
 WizardStyle=modern
-WizardImageFile="D:\Islam\Text Copier\install.bmp"
+WizardImageFile="D:\Apps\Islamic Text Copier\Icons\install.bmp"
 DefaultDirName={localappdata}\nasiratif\Islamic Text Copier
 DefaultGroupName={#MyAppName}
 UninstallDisplayIcon={app}\itc.exe
 AppPublisher={#MyAppPublisher}
 Compression=lzma2
 SolidCompression=yes
-OutputDir="D:\Islam\Text Copier\install_output"
+OutputDir="D:\Apps\Islamic Text Copier\install_output"
 OutputBaseFilename=IslamicTextCopierInstall
 PrivilegesRequired=lowest
 DisableWelcomePage=no
@@ -27,7 +27,7 @@ WelcomeLabel2=Jazākallāhu Khayran, thank you for downloading my software!%n%nT
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
    GroupDescription: "{cm:AdditionalIcons}";
 [Files]
-Source: "D:\Islam\Text Copier\Code\itc\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "D:\Apps\Islamic Text Copier\Code\itc\*"; DestDir: "{app}"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\Islāmic Text Copier"; Filename: "{app}\itc.exe"
