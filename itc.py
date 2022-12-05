@@ -10,16 +10,14 @@ import os
 import requests
 from socket import *
 import webbrowser
-from pyglet import *
+from pyglet import font
 from keyboard import *
 from ctypes import *
 from pyperclip import *
 
-# set itc to be dpi aware and add a custom font
-
-font.add_file("resources/markazi.ttf")
-
 # init window
+
+font.add_file("resources/calibri.ttf")
 
 root = HdpiTk()
 
@@ -35,7 +33,7 @@ winY = (scrH / 2) - (winH / 2)
 bg = "#1b1c27"
 hoverbg = "#393c4f"
 htipbg = "#191a24"
-regfont = "Markazi Text"
+regfont = "Calibri"
 
 root.iconbitmap("resources/icon.ico")
 root.attributes("-topmost", True)
@@ -270,10 +268,9 @@ def hovercl(event):
 
 # gui
 
-
 copyinf_d = "Hover over a text to see it's meaning in English"
-copyinf = Label(text=copyinf_d, font=(regfont, 16), bg=bg, fg="white")
-copyinf.pack(side="bottom", pady=7)
+copyinf = Label(text=copyinf_d, font=(regfont, 13), bg=bg, fg="white")
+copyinf.pack(side="bottom", pady=15)
 
 btn1_img = PhotoImage(file="resources/1.png")
 btn2_img = PhotoImage(file="resources/2.png")
@@ -289,13 +286,13 @@ btn11_img = PhotoImage(file="resources/11.png")
 btn12_img = PhotoImage(file="resources/12.png")
 btn13_img = PhotoImage(file="resources/13.png")
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3", bg=bg, fg="white", font=(regfont, 15))
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.1", bg=bg, fg="white", font=(regfont, 13))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
 copyrighttxt.bind("<Button-1>", lambda e:homeurl(homeurl))
 
-htip = Button(text="Documentation", command=hmsg, font=(regfont, 15), bg=htipbg, activebackground=htipbg, fg="white", activeforeground="white", borderwidth=0)
+htip = Button(text="Documentation", command=hmsg, font=(regfont, 13), bg=htipbg, activebackground=htipbg, fg="white", activeforeground="white", borderwidth=0)
 htip.place(relx=0.5, rely=0.12, anchor=CENTER)
 htip.bind("<Enter>", hoverh)
 htip.bind("<Leave>", hoverhl)
@@ -380,7 +377,7 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 15
+itcversion = 16
 
 if isconnected == True:
     request = requests.get("http://nasiratif.net/dl/version.txt")
