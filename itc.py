@@ -6,13 +6,13 @@
 from tkinter import *
 from hdpitkinter import HdpiTk
 from tkinter import messagebox
-import os
-import requests
-from socket import *
+from os import startfile, path
+from requests import get
+from socket import create_connection
 import webbrowser
 from pyglet import font
-from keyboard import *
-from ctypes import *
+from keyboard import add_hotkey
+from ctypes import windll
 from pyperclip import *
 
 # init window
@@ -145,7 +145,7 @@ def hoverhl(event):
     htip["bg"] = htipbg
 
 def hmsg():
-    os.startfile("ITC_Documentation.pdf", "open")
+    startfile("ITC_Documentation.pdf", "open")
     root.wm_state("iconic")
 
 homeurllink = "http://nasiratif.net/islamic-text-copier/"
@@ -246,7 +246,7 @@ def hover11l(event):
 
 def hover12(event):
     btn12["bg"] = hoverbg
-    copyinf.config(text="Bārik Allāhu Fīk (ALT + - (Dash Symbol) )")
+    copyinf.config(text="Bārik Allāhu Fīk (ALT + = (Equal Symbol) )")
 
 def hover12l(event):
     btn12["bg"] = bg
@@ -286,7 +286,7 @@ btn11_img = PhotoImage(file="resources/11.png")
 btn12_img = PhotoImage(file="resources/12.png")
 btn13_img = PhotoImage(file="resources/13.png")
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.1", bg=bg, fg="white", font=(regfont, 13))
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.2", bg=bg, fg="white", font=(regfont, 13))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
@@ -377,13 +377,13 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 16
+itcversion = 17
 
 if isconnected == True:
-    request = requests.get("http://nasiratif.net/dl/version.txt")
+    request = get("http://nasiratif.net/dl/version.txt")
     open("version.txt", "wb").write(request.content)
 
-    if os.path.isfile(r"version.txt"):
+    if path.isfile(r"version.txt"):
         f=open(r"version.txt", "r")
         fileversion = f.read() .replace("\n", "").strip()
         if float(fileversion) > float(itcversion):
