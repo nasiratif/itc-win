@@ -133,7 +133,7 @@ def btn13():
     copy("السلام عليكم")
     copyinf.config(text="Just copied: السلام عليكم")
 
-add_hotkey("alt+[", lambda : copy("بارك الله فيك"))
+add_hotkey("alt+[", lambda : copy("السلام عليكم"))
 add_hotkey("alt+[", lambda : copyinf.config(text="Just copied: السلام عليكم"))
 
 # other functions
@@ -286,7 +286,7 @@ btn11_img = PhotoImage(file="resources/11.png")
 btn12_img = PhotoImage(file="resources/12.png")
 btn13_img = PhotoImage(file="resources/13.png")
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.2", bg=bg, fg="white", font=(regfont, 13))
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.3", bg=bg, fg="white", font=(regfont, 13))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
@@ -377,7 +377,7 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 17
+itcversion = 18
 
 if isconnected == True:
     request = get("http://nasiratif.net/dl/version.txt")
