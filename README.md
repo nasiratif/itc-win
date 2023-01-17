@@ -1,7 +1,7 @@
 # Islāmic Text Copier
 This is a simple text copying program. The goal of this app is simple; give the user easy access to commonly used Arabic texts on their PC, such as Subḥānahu wa Taʾālá and Sallá Allāhu ʿAlayhī wa as-Salam.
 
-The release can be downloaded at it's official home page: https://nasiratif.net/islamic-text-copier/.
+The release can be downloaded at it's official home page: https://itc.nasiratif.net.
 
 # Contributions
 I decided to open-source this program so that anyone can contribute to it, like fixing bugs and adding more texts. It is programmed entirely in Python, so make sure you have knowledge of it and have it installed on your PC.
