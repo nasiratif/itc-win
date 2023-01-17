@@ -7,7 +7,7 @@
 
 [Setup]
 AppName={#MyAppName}
-AppVersion=2.3.3
+AppVersion=2.3.4
 WizardStyle=modern
 WizardImageFile="D:\Apps\Islamic Text Copier\Icons\install.bmp"
 DefaultDirName={localappdata}\nasiratif\Islamic Text Copier
@@ -22,7 +22,7 @@ PrivilegesRequired=lowest
 DisableWelcomePage=no
 [Messages]
 WelcomeLabel1=Welcome to the {#MyAppName} Installer
-WelcomeLabel2=Jazākallāhu Khayran, thank you for downloading my software!%n%nThe Islāmic Text Copier is a simple but very useful PC software that allows you to easily copy Arabic islamic texts to your clipboard. This is especially useful when writing articles.
+WelcomeLabel2=Jazākallāhu Khairan, thank you for downloading my software!%n%nThe Islāmic Text Copier is a simple but very useful PC software that allows you to easily copy Arabic islamic texts to your clipboard. This is especially useful when writing articles.
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
    GroupDescription: "{cm:AdditionalIcons}";
