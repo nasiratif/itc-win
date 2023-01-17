@@ -148,7 +148,7 @@ def hmsg():
     startfile("ITC_Documentation.pdf", "open")
     root.wm_state("iconic")
 
-homeurllink = "http://nasiratif.net/islamic-text-copier/"
+homeurllink = "http://itc.nasiratif.net"
 
 def homeurl(url):
     webbrowser.open_new_tab(homeurllink)
@@ -286,7 +286,7 @@ btn11_img = PhotoImage(file="resources/11.png")
 btn12_img = PhotoImage(file="resources/12.png")
 btn13_img = PhotoImage(file="resources/13.png")
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.3", bg=bg, fg="white", font=(regfont, 13))
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.4", bg=bg, fg="white", font=(regfont, 13))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
@@ -367,7 +367,7 @@ btn13.bind("<Leave>", hover13l)
 
 def testnet():
     try:
-        create_connection(("nasiratif.net", 443))
+        create_connection(("itc.nasiratif.net", 443))
         return True
     except OSError:
         return False
@@ -377,10 +377,10 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 18
+itcversion = 19
 
 if isconnected == True:
-    request = get("http://nasiratif.net/dl/version.txt")
+    request = get("http://itc.nasiratif.net/version.txt")
     open("version.txt", "wb").write(request.content)
 
     if path.isfile(r"version.txt"):
@@ -390,7 +390,7 @@ if isconnected == True:
             f.close()
             updatemsg = messagebox.askquestion(title="Update Available", message="Alḥamdulillāh, an update is available. Go to the home page to download it?")
             if updatemsg == "yes":
-                webbrowser.open("http://nasiratif.net/islamic-text-copier/")
+                webbrowser.open("http://itc.nasiratif.net")
                 root.destroy()
 
 root.mainloop()
