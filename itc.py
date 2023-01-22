@@ -4,7 +4,7 @@
 # arabic font used is Segoe UI
 
 from tkinter import *
-from hdpitkinter import HdpiTk
+from PIL import ImageTk, Image
 from tkinter import messagebox
 from os import startfile, path
 from requests import get
@@ -17,31 +17,38 @@ from pyperclip import *
 
 # init window
 
+windll.shcore.SetProcessDpiAwareness(1) # set DPI awareness
+
 font.add_file("resources/calibri.ttf")
 
-root = HdpiTk()
+root = Tk()
+print("Init window")
 
-winW = 620 # width of the window
-winH = 320 # height of the window
+ppi = round(root.winfo_fpixels("1i"))
+print("PPI is " + str(ppi))
+dpiscale = ppi / 96
+print("Calculated DPI scale is " + str(dpiscale))
+
+winW = int(620 * dpiscale) # width of the window
+winH = int(320 * dpiscale) # height of the window
 
 scrW = windll.user32.GetSystemMetrics(0)
 scrH = windll.user32.GetSystemMetrics(1)
 
 winX = (scrW / 2) - (winW / 2)
 winY = (scrH / 2) - (winH / 2)
+root.geometry(f"{winW}x{winH}+{int(winX)}+{int(winY)}")
+root.iconbitmap("resources/icon.ico")
+root.attributes("-topmost", True)
+root.title("Islāmic Text Copier")
+root.resizable(0,0)
 
 bg = "#1b1c27"
 hoverbg = "#393c4f"
-htipbg = "#191a24"
+docubtn_bg = "#191a24"
 regfont = "Calibri"
 
-root.iconbitmap("resources/icon.ico")
-root.attributes("-topmost", True)
-
-root.title("Islāmic Text Copier")
 root.configure(bg=bg)
-root.resizable(0,0)
-root.geometry(f"{winW}x{winH}+{int(winX)}+{int(winY)}")
 
 # the entire point of this program
 
@@ -139,10 +146,12 @@ add_hotkey("alt+[", lambda : copyinf.config(text="Just copied: السلام عل
 # other functions
 
 def hoverh(event):
-    htip["bg"] = hoverbg
+    docubtn["bg"] = hoverbg
+    copyinf.config(text="View the documentation for Islāmic Text Copier.")
 
 def hoverhl(event):
-    htip["bg"] = htipbg
+    docubtn["bg"] = docubtn_bg
+    copyinf.config(text=copyinf_d)
 
 def hmsg():
     startfile("ITC_Documentation.pdf", "open")
@@ -262,40 +271,80 @@ def hover13l(event):
 
 def hoverc(event):
     copyrighttxt["fg"] = "gray"
+    copyinf.config(text="Go to the Islāmic Text Copier website.")
 
 def hovercl(event):
     copyrighttxt["fg"] = "white"
+    copyinf.config(text=copyinf_d)
 
 # gui
 
 copyinf_d = "Hover over a text to see it's meaning in English"
-copyinf = Label(text=copyinf_d, font=(regfont, 13), bg=bg, fg="white")
+copyinf = Label(text=copyinf_d, font=(regfont, 12), bg=bg, fg="white")
 copyinf.pack(side="bottom", pady=15)
 
-btn1_img = PhotoImage(file="resources/1.png")
-btn2_img = PhotoImage(file="resources/2.png")
-btn3_img = PhotoImage(file="resources/3.png")
-btn4_img = PhotoImage(file="resources/4.png")
-btn5_img = PhotoImage(file="resources/5.png")
-btn6_img = PhotoImage(file="resources/6.png")
-btn7_img = PhotoImage(file="resources/7.png")
-btn8_img = PhotoImage(file="resources/8.png")
-btn9_img = PhotoImage(file="resources/9.png")
-btn10_img = PhotoImage(file="resources/10.png")
-btn11_img = PhotoImage(file="resources/11.png")
-btn12_img = PhotoImage(file="resources/12.png")
-btn13_img = PhotoImage(file="resources/13.png")
+btn1_img = Image.open("resources/1.png")
+btn1_img_resized = btn1_img.resize((int(btn1_img.width * dpiscale), int(btn1_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn1_img = ImageTk.PhotoImage(btn1_img_resized)
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.3.4", bg=bg, fg="white", font=(regfont, 13))
+btn2_img = Image.open("resources/2.png")
+btn2_img_resized = btn2_img.resize((int(btn2_img.width * dpiscale), int(btn2_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn2_img = ImageTk.PhotoImage(btn2_img_resized)
+
+btn3_img = Image.open("resources/3.png")
+btn3_img_resized = btn3_img.resize((int(btn3_img.width * dpiscale), int(btn3_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn3_img = ImageTk.PhotoImage(btn3_img_resized)
+
+btn4_img = Image.open("resources/4.png")
+btn4_img_resized = btn4_img.resize((int(btn4_img.width * dpiscale), int(btn4_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn4_img = ImageTk.PhotoImage(btn4_img_resized)
+
+btn5_img = Image.open("resources/5.png")
+btn5_img_resized = btn5_img.resize((int(btn5_img.width * dpiscale), int(btn5_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn5_img = ImageTk.PhotoImage(btn5_img_resized)
+
+btn6_img = Image.open("resources/6.png")
+btn6_img_resized = btn6_img.resize((int(btn6_img.width * dpiscale), int(btn6_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn6_img = ImageTk.PhotoImage(btn6_img_resized)
+
+btn7_img = Image.open("resources/7.png")
+btn7_img_resized = btn7_img.resize((int(btn7_img.width * dpiscale), int(btn7_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn7_img = ImageTk.PhotoImage(btn7_img_resized)
+
+btn8_img = Image.open("resources/8.png")
+btn8_img_resized = btn8_img.resize((int(btn8_img.width * dpiscale), int(btn8_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn8_img = ImageTk.PhotoImage(btn8_img_resized)
+
+btn9_img = Image.open("resources/9.png")
+btn9_img_resized = btn9_img.resize((int(btn9_img.width * dpiscale), int(btn9_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn9_img = ImageTk.PhotoImage(btn9_img_resized)
+
+btn10_img = Image.open("resources/10.png")
+btn10_img_resized = btn10_img.resize((int(btn10_img.width * dpiscale), int(btn10_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn10_img = ImageTk.PhotoImage(btn10_img_resized)
+
+btn11_img = Image.open("resources/11.png")
+btn11_img_resized = btn11_img.resize((int(btn11_img.width * dpiscale), int(btn11_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn11_img = ImageTk.PhotoImage(btn11_img_resized)
+
+btn12_img = Image.open("resources/12.png")
+btn12_img_resized = btn12_img.resize((int(btn12_img.width * dpiscale), int(btn12_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn12_img = ImageTk.PhotoImage(btn12_img_resized)
+
+btn13_img = Image.open("resources/13.png")
+btn13_img_resized = btn13_img.resize((int(btn13_img.width * dpiscale), int(btn13_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn13_img = ImageTk.PhotoImage(btn13_img_resized)
+
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.4", bg=bg, fg="white", font=(regfont, 12))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
 copyrighttxt.bind("<Button-1>", lambda e:homeurl(homeurl))
 
-htip = Button(text="Documentation", command=hmsg, font=(regfont, 13), bg=htipbg, activebackground=htipbg, fg="white", activeforeground="white", borderwidth=0)
-htip.place(relx=0.5, rely=0.12, anchor=CENTER)
-htip.bind("<Enter>", hoverh)
-htip.bind("<Leave>", hoverhl)
+docubtn = Button(text="Documentation", command=hmsg, font=(regfont, 12), bg=docubtn_bg, activebackground=docubtn_bg, fg="white", activeforeground="white", borderwidth=0)
+docubtn.place(relx=0.5, rely=0.12, anchor=CENTER)
+docubtn.bind("<Enter>", hoverh)
+docubtn.bind("<Leave>", hoverhl)
 
 btn1 = Button(root, command=btn1, image=btn1_img, bg=bg, activebackground=bg, borderwidth=0)
 btn1.place(relx=0.13, rely=0.24)
@@ -377,7 +426,7 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 19
+itcversion = 20
 
 if isconnected == True:
     request = get("http://itc.nasiratif.net/version.txt")
