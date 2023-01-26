@@ -143,6 +143,13 @@ def btn13():
 add_hotkey("alt+[", lambda : copy("السلام عليكم"))
 add_hotkey("alt+[", lambda : copyinf.config(text="Just copied: السلام عليكم"))
 
+def btn14():
+    copy("إن شاء الله")
+    copyinf.config(text="Just copied: إن شاء الله")
+
+add_hotkey("alt+]", lambda : copy("إن شاء الله"))
+add_hotkey("alt+]", lambda : copyinf.config(text="Just copied: إن شاء الله"))
+
 # other functions
 
 def hoverh(event):
@@ -269,6 +276,14 @@ def hover13l(event):
     btn13["bg"] = bg
     copyinf.config(text=copyinf_d)
 
+def hover14(event):
+    btn14["bg"] = hoverbg
+    copyinf.config(text="ʾIn shāʾ Allāh (ALT + ] (Right Square Bracket Symbol) )")
+
+def hover14l(event):
+    btn14["bg"] = bg
+    copyinf.config(text=copyinf_d)
+
 def hoverc(event):
     copyrighttxt["fg"] = "gray"
     copyinf.config(text="Go to the Islāmic Text Copier website.")
@@ -335,7 +350,11 @@ btn13_img = Image.open("resources/13.png")
 btn13_img_resized = btn13_img.resize((int(btn13_img.width * dpiscale), int(btn13_img.height * dpiscale)), Image.Resampling.LANCZOS)
 btn13_img = ImageTk.PhotoImage(btn13_img_resized)
 
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.4", bg=bg, fg="white", font=(regfont, 12))
+btn14_img = Image.open("resources/14.png")
+btn14_img_resized = btn14_img.resize((int(btn14_img.width * dpiscale), int(btn14_img.height * dpiscale)), Image.Resampling.LANCZOS)
+btn14_img = ImageTk.PhotoImage(btn14_img_resized)
+
+copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.5", bg=bg, fg="white", font=(regfont, 12))
 copyrighttxt.place(x=8, y=8)
 copyrighttxt.bind("<Enter>", hoverc)
 copyrighttxt.bind("<Leave>", hovercl)
@@ -411,6 +430,11 @@ btn13.place(relx=0.69, rely=0.63)
 btn13.bind("<Enter>", hover13)
 btn13.bind("<Leave>", hover13l)
 
+btn14 = Button(root, command=btn14, image=btn14_img, bg=bg, activebackground=bg, borderwidth=0)
+btn14.place(relx=0.14, rely=0.75)
+btn14.bind("<Enter>", hover14)
+btn14.bind("<Leave>", hover14l)
+
 # check if the system is connected to the internet before checking for updates
 # otherwise itc would crash
 
@@ -426,7 +450,7 @@ isconnected = testnet()
 # check for updates
 
  # set current version of itc in this variable:
-itcversion = 20
+itcversion = 21
 
 if isconnected == True:
     request = get("http://itc.nasiratif.net/version.txt")
