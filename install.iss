@@ -7,7 +7,7 @@
 
 [Setup]
 AppName={#MyAppName}
-AppVersion=2.5
+AppVersion=2.6
 WizardStyle=modern
 WizardImageFile="D:\Apps\Islamic Text Copier\Icons\install.bmp"
 DefaultDirName={localappdata}\nasiratif\Islamic Text Copier
@@ -27,7 +27,7 @@ WelcomeLabel2=Jazākallāhu Khairan, thank you for downloading my software!%n%nT
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
    GroupDescription: "{cm:AdditionalIcons}";
 [Files]
-Source: "D:\Apps\Islamic Text Copier\Code\itc\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "D:\Apps\Islamic Text Copier\Code\itc\*"; DestDir: "{app}"; Excludes: "version.txt"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\Islāmic Text Copier"; Filename: "{app}\itc.exe"
