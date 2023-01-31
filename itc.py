@@ -220,7 +220,7 @@ def hover1l(event):
 
 def hover2(event):
     btn2["bg"] = hoverbg
-    copyinf.config(text="Jalla Jalāluhu (ALT + 2) ")
+    copyinf.config(text="Jalla Jalāluhu (Exalted is His Majesty) (ALT + 2) ")
 
 
 def hover2l(event):
