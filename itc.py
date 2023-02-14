@@ -1,470 +1,403 @@
-# Islāmic Text Copier
-# Nāṣir ʿAṭif
-
-# arabic font used is Segoe UI
+# Islāmic Text Copier Revision 3
+# © ناصر عاطف (Nāṣir ʿAṭif)
 
 from tkinter import *
-from PIL import ImageTk, Image
-from tkinter import messagebox
-from os import startfile, path
+from customtkinter import *
+from pyperclip import *
+from pyautogui import *
+from keyboard import *
+from os import path, remove
 from requests import get
 from socket import create_connection
 import webbrowser
-from pyglet import font
-from keyboard import add_hotkey
-from ctypes import windll
-from pyperclip import *
+from threading import *
+from subprocess import *
+from platform import *
+
+user_platform = system()
+print("Running on " + user_platform)
+
+# theming
+
+set_default_color_theme("itc.theme.json")
+app_font = "Calibri"
+app_symbol_font_size = 35
+
+# result in smaller symbol font size if the platform is macOS, since it uses a weird font for Arabic symbols
+
+#if user_platform == "darwin":
+#    app_symbol_font_size = app_symbol_font_size - 15
+
+# import startile if the platform is windows
+
+if user_platform == "Windows":
+    from os import startfile
+
+# delete version.txt file when closing
+
+def clear():
+    try:
+        print("ITC preparing to quit")
+        remove("version.txt")
+        itc.quit()
+    except:
+        print("Version file not found, either way ITC preparing to quit")
+        itc.quit()
+
+winW = 580 # width of the window
+winH = 350 # height of the window
+
+scrW, scrH = size() # width and height of the user's computer
+print("Screen resolution is " + str(scrW) + " x " + str(scrH))
 
 # init window
 
-windll.shcore.SetProcessDpiAwareness(1) # set DPI awareness
+itc = CTk()
 
-font.add_file("resources/calibri.ttf")
+# get user's DPI
 
-root = Tk()
-print("Init window")
-
-ppi = round(root.winfo_fpixels("1i"))
+ppi = round(itc.winfo_fpixels("1i"))
 print("PPI is " + str(ppi))
 dpiscale = ppi / 96
+
+# correctly set the window's position
+
+winW_DPI = winW * dpiscale
+winH_DPI = winH * dpiscale
+
+winX = (scrW / 2) - (winW_DPI / 2)
+winY = (scrH / 2) - (winH_DPI / 2)
+
 print("Calculated DPI scale is " + str(dpiscale))
 
-winW = int(620 * dpiscale) # width of the window
-winH = int(320 * dpiscale) # height of the window
+itc.geometry(f"{winW}x{winH}+{int(winX)}+{int(winY)}")
+itc.protocol("WM_DELETE_WINDOW", clear)
+itc.minsize(winW, winH)
+itc.resizable(0,1)
+itc.iconbitmap("itc.icon.ico")
+itc.title("Islāmic Text Copier")
 
-scrW = windll.user32.GetSystemMetrics(0)
-scrH = windll.user32.GetSystemMetrics(1)
+# button copy functions
 
-winX = (scrW / 2) - (winW / 2)
-winY = (scrH / 2) - (winH / 2)
-root.geometry(f"{winW}x{winH}+{int(winX)}+{int(winY)}")
-root.iconbitmap("resources/icon.ico")
-root.attributes("-topmost", True)
-transcolor = "#000001"
-root.title("Islāmic Text Copier")
-root.resizable(0,0)
+def copyJAL():
+    copy(bJAL.cget("text"))
+    hover_tip.configure(text="Just copied: " + bJAL.cget("text"))
 
-bg = "#1b1c27"
-hoverbg = "#393c4f"
-docubtn_bg = "#191a24"
-regfont = "Calibri"
+def copySWT():
+    copy(bSWT.cget("text"))
+    hover_tip.configure(text="Just copied: " + bSWT.cget("text"))
 
-root.configure(bg=bg)
+def copyAZW():
+    copy(bAZW.cget("text"))
+    hover_tip.configure(text="Just copied: " + bAZW.cget("text"))
 
-# the entire point of this program
+def copySAW():
+    copy(bSAW.cget("text"))
+    hover_tip.configure(text="Just copied: " + bSAW.cget("text"))
 
-def btn1():
-    copy("ﷺ")
-    copyinf.config(text="Just copied: ﷺ")
+def copyRA():
+    copy(bRA.cget("text"))
+    hover_tip.configure(text="Just copied: " + bRA.cget("text"))
 
-add_hotkey("alt+1", lambda : copy("ﷺ"))
-add_hotkey("alt+1", lambda : copyinf.config(text="Just copied: ﷺ"))
+def copyRA2():
+    copy(bRA2.cget("text"))
+    hover_tip.configure(text="Just copied: " + bRA2.cget("text"))
 
-def btn2():
-    copy("ﷻ")
-    copyinf.config(text="Just copied: ﷻ")
+def copyRAH():
+    copy(bRAH.cget("text"))
+    hover_tip.configure(text="Just copied: " + bRAH.cget("text"))
 
-add_hotkey("alt+2", lambda : copy("ﷻ"))
-add_hotkey("alt+2", lambda : copyinf.config(text="Just copied: ﷻ"))
+def copyHAF():
+    copy(bHAF.cget("text"))
+    hover_tip.configure(text="Just copied: " + bHAF.cget("text"))
 
-def btn3():
-    copy("سبحانه و تعالى")
-    copyinf.config(text="Just copied: سبحانه و تعالى")
+def copyAS():
+    copy(bAS.cget("text"))
+    hover_tip.configure(text="Just copied: " + bAS.cget("text"))
 
-add_hotkey("alt+3", lambda : copy("سبحانه و تعالى"))
-add_hotkey("alt+3", lambda : copyinf.config(text="Just copied: سبحانه و تعالى"))
+def copyALH():
+    copy(bALH.cget("text"))
+    hover_tip.configure(text="Just copied: " + bALH.cget("text"))
 
-def btn4():
-    copy("عز و جل")
-    copyinf.config(text="Just copied: عز و جل")
+def copyJZK():
+    copy(bJZK.cget("text"))
+    hover_tip.configure(text="Just copied: " + bJZK.cget("text"))
 
-add_hotkey("alt+4", lambda : copy("عز و جل"))
-add_hotkey("alt+4", lambda : copyinf.config(text="Just copied: عز و جل"))
+def copyBRK():
+    copy(bBRK.cget("text"))
+    hover_tip.configure(text="Just copied: " + bBRK.cget("text"))
 
-def btn5():
-    copy("رضي الله عنه")
-    copyinf.config(text="Just copied: رضي الله عنه")
+def copyASL():
+    copy(bASL.cget("text"))
+    hover_tip.configure(text="Just copied: " + bASL.cget("text"))
 
-add_hotkey("alt+5", lambda : copy("رضي الله عنه"))
-add_hotkey("alt+5", lambda : copyinf.config(text="Just copied: رضي الله عنه"))
+def copyINS():
+    copy(bINS.cget("text"))
+    hover_tip.configure(text="Just copied: " + bINS.cget("text"))
 
-def btn6():
-    copy("رضي الله عنها")
-    copyinf.config(text="Just copied: رضي الله عنها")
+def copyRA3():
+    copy(bRA3.cget("text"))
+    hover_tip.configure(text="Just copied: " + bRA3.cget("text"))
 
-add_hotkey("alt+6", lambda : copy("رضي الله عنها"))
-add_hotkey("alt+6", lambda : copyinf.config(text="Just copied: رضي الله عنها"))
+# functions
 
-def btn7():
-    copy("رحمه الله")
-    copyinf.config(text="Just copied: رحمه الله")
+def enter_website(e):
+    webbrowser.open("https://itc.nasiratif.net")
 
-add_hotkey("alt+7", lambda : copy("رحمه الله"))
-add_hotkey("alt+7", lambda : copyinf.config(text="Just copied: رحمه الله"))
+def open_doc():
+    if user_platform == "Windows":
+        startfile("ITC_Documentation.pdf")
+    else:
+        if user_platform == "darwin":
+            Popen(["open", "ITC_Documentation.pdf"])
 
-def btn8():
-    copy("حفظه الله")
-    copyinf.config(text="Just copied: حفظه الله")
+def update_link():
+    webbrowser.open("https://itc.nasiratif.net")
+    clear()
 
-add_hotkey("alt+8", lambda : copy("حفظه الله"))
-add_hotkey("alt+8", lambda : copyinf.config(text="Just copied: حفظه الله"))
+def unhover(e):
+    hover_tip.configure(text=hover_tip_default)
 
-def btn9():
-    copy("عليه السلام")
-    copyinf.config(text="Just copied: عليه السلام")
+def bDOC_hover(e):
+    hover_tip.configure(text="View the documentation of Islāmic Text Copier")
 
-add_hotkey("alt+9", lambda : copy("عليه السلام"))
-add_hotkey("alt+9", lambda : copyinf.config(text="Just copied: عليه السلام"))
+def bUPD_hover(e):
+    hover_tip.configure(text="Update Islāmic Text Copier")
 
-def btn10():
-    copy("الحمد لله")
-    copyinf.config(text="Just copied: الحمد لله")
+def bJAL_hover(e):
+    hover_tip.configure(text="Jalla Jalāluhu (Exalted is His Majesty) (ALT + 1)")
 
-add_hotkey("alt+0", lambda : copy("الحمد لله"))
-add_hotkey("alt+0", lambda : copyinf.config(text="Just copied: الحمد لله"))
+def bSWT_hover(e):
+    hover_tip.configure(text="Subḥānahu wa Taʾālá (Glorious and Exalted is He) (ALT + 2)")
 
-def btn11():
-    copy("جزاك الله خيرا")
-    copyinf.config(text="Just copied: جزاك الله خيرا")
+def bAZW_hover(e):
+    hover_tip.configure(text="ʿAzza wa Jal (The Mighty and Majestic) (ALT + 3)")
 
-add_hotkey("alt+-", lambda : copy("جزاك الله خيرا"))
-add_hotkey("alt+-", lambda : copyinf.config(text="Just copied: جزاك الله خيرا"))
+def bSAW_hover(e):
+    hover_tip.configure(text="ʿSallá Allāhu ʿAlayhī wa as-Salam (May Allāh's praise & salutations be upon him) (ALT + 4)")
 
-def btn12():
-    copy("بارك الله فيك")
-    copyinf.config(text="Just copied: بارك الله فيك")
+def bRA_hover(e):
+    hover_tip.configure(text="Raḍī Allāhu ʿAnhu (May Allāh be pleased with him) (ALT + 5)")
 
-add_hotkey("alt+=", lambda : copy("بارك الله فيك"))
-add_hotkey("alt+=", lambda : copyinf.config(text="Just copied: بارك الله فيك"))
+def bRA2_hover(e):
+    hover_tip.configure(text="Raḍī Allāhu ʿAnhā (May Allāh be pleased with her) (ALT + 6)")
 
-def btn13():
-    copy("السلام عليكم")
-    copyinf.config(text="Just copied: السلام عليكم")
+def bRAH_hover(e):
+    hover_tip.configure(text="Raḥimahullāh (May Allah have mercy on him) (ALT + 7)")
 
-add_hotkey("alt+[", lambda : copy("السلام عليكم"))
-add_hotkey("alt+[", lambda : copyinf.config(text="Just copied: السلام عليكم"))
+def bHAF_hover(e):
+    hover_tip.configure(text="Ḥafiẓahullāh (May Allah preserve him) (ALT + 8)")
 
-def btn14():
-    copy("إن شاء الله")
-    copyinf.config(text="Just copied: إن شاء الله")
+def bAS_hover(e):
+    hover_tip.configure(text="ʿAlayhī as-Salām (Peace be upon him) (ALT + 9)")
 
-add_hotkey("alt+]", lambda : copy("إن شاء الله"))
-add_hotkey("alt+]", lambda : copyinf.config(text="Just copied: إن شاء الله"))
+def bALH_hover(e):
+    hover_tip.configure(text="Alḥamdulillāh (All praises and thanks are due to Allāh) (ALT + 0)")
 
-# other functions
+def bJZK_hover(e):
+    hover_tip.configure(text="Jazāk Allāhu Khairan (May Allāh give you good) (ALT + -)")
 
-def hoverh(event):
-    docubtn["bg"] = hoverbg
-    copyinf.config(text="View the documentation for Islāmic Text Copier.")
+def bBRK_hover(e):
+    hover_tip.configure(text="Bārik Allāhu Fīk (May Allāh bless you) (ALT + =)")
 
-def hoverhl(event):
-    docubtn["bg"] = docubtn_bg
-    copyinf.config(text=copyinf_d)
+def bASL_hover(e):
+    hover_tip.configure(text="As Salāmu ‘Alaikum (Peace be upon you) (ALT + [)")
 
-def hmsg():
-    startfile("ITC_Documentation.pdf", "open")
-    root.wm_state("iconic")
+def bINS_hover(e):
+    hover_tip.configure(text="ʾIn shāʾ Allāh (If Allāh wills) (ALT + ])")
 
-homeurllink = "http://itc.nasiratif.net"
+def bRA3_hover(e):
+    hover_tip.configure(text="Raḍī Allāhu ʿAnhumā (May Allāh be pleased with them) (ALT + ;)")
 
-def homeurl(url):
-    webbrowser.open_new_tab(homeurllink)
+def copyright_hover(e):
+    copyright.configure(text_color="gray")
+    hover_tip.configure(text="Go to the website of Islāmic Text Copier")
 
-def hover9l(event):
-    btn9["bg"] = bg
+def copyright_unhover(e):
+    copyright.configure(text_color="#DCE4EE")
+    hover_tip.configure(text=hover_tip_default)
+
+# labels
 
-def hover1(event):
-    btn1["bg"] = hoverbg
-    copyinf.config(text="Sallá Allāhu ʿAlayhī wa as-Salam (May Allāh's praise & salutations be upon him) (ALT + 1)")
+hover_tip_default = "Hover over a text to see it's meaning in English"
+hover_tip = CTkLabel(master=itc, text=hover_tip_default, font=(app_font, 15))
+hover_tip.pack(side="bottom", pady=6)
 
-def hover1l(event):
-    btn1["bg"] = bg
-    copyinf.config(text=copyinf_d)
+copyright = CTkLabel(master=itc, text="© ناصر عاطف\nv3.0", font=(app_font, 16))
+copyright.bind("<Enter>", copyright_hover)
+copyright.bind("<Leave>", copyright_unhover)
+copyright.bind("<Button-1>", enter_website)
+copyright.place(x=15, y=13)
 
-def hover2(event):
-    btn2["bg"] = hoverbg
-    copyinf.config(text="Jalla Jalāluhu (Exalted is His Majesty) (ALT + 2)")
+# misc buttons
 
-def hover2l(event):
-    btn2["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bDOC = CTkButton(master=itc, command=open_doc, text="View Documentation", width=50, height=32, font=(app_font, 14))
+bDOC.bind("<Enter>", bDOC_hover)
+bDOC.bind("<Leave>", unhover)
+bDOC.pack(side=TOP, anchor=CENTER, pady=15)
 
-def hover3(event):
-    btn3["bg"] = hoverbg
-    copyinf.config(text="Subḥānahu wa Taʾālá (Glorious and Exalted is He) (ALT + 3)")
+bUPD = CTkButton(master=itc, command=update_link, text="Update Available!", width=50, height=30, font=(app_font, 15))
+bUPD.bind("<Enter>", bUPD_hover)
+bUPD.bind("<Leave>", unhover)
 
-def hover3l(event):
-    btn3["bg"] = bg
-    copyinf.config(text=copyinf_d)
+# copyable buttons
 
-def hover4(event):
-    btn4["bg"] = hoverbg
-    copyinf.config(text="ʿAzza wa Jal (The Mighty and Majestic) (ALT + 4)")
+bJAL = CTkButton(master=itc, command=copyJAL, text="ﷻ", width=50, height=50, font=(app_font, app_symbol_font_size))
+bJAL.bind("<Enter>", bJAL_hover)
+bJAL.bind("<Leave>", unhover)
+bJAL.place(relx=0.1, rely=0.20)
 
-def hover4l(event):
-    btn4["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bSWT = CTkButton(master=itc, command=copySWT, text="سبحانه و تعالى", width=50, height=50, font=(app_font, 20))
+bSWT.bind("<Enter>", bSWT_hover)
+bSWT.bind("<Leave>", unhover)
+bSWT.place(relx=0.22, rely=0.20)
 
-def hover5(event):
-    btn5["bg"] = hoverbg
-    copyinf.config(text="Raḍī Allāhu ʿAnhu (May Allāh be pleased with him) (ALT + 5)")
+bAZW = CTkButton(master=itc, command=copyAZW, text="عز و جل", width=50, height=50, font=(app_font, 20))
+bAZW.bind("<Enter>", bAZW_hover)
+bAZW.bind("<Leave>", unhover)
+bAZW.place(relx=0.45, rely=0.20)
 
-def hover5l(event):
-    btn5["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bSAW = CTkButton(master=itc, command=copySAW, text="ﷺ", width=50, height=50, font=(app_font, app_symbol_font_size))
+bSAW.bind("<Enter>", bSAW_hover)
+bSAW.bind("<Leave>", unhover)
+bSAW.place(relx=0.61, rely=0.20)
 
-def hover6(event):
-    btn6["bg"] = hoverbg
-    copyinf.config(text="Raḍī Allāhu ʿAnhā (May Allāh be pleased with her) (ALT + 6)")
+bRA = CTkButton(master=itc, command=copyRA, text="رضي الله عنه", width=50, height=50, font=(app_font, 20))
+bRA.bind("<Enter>", bRA_hover)
+bRA.bind("<Leave>", unhover)
+bRA.place(relx=0.73, rely=0.20)
 
-def hover6l(event):
-    btn6["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bRA2 = CTkButton(master=itc, command=copyRA2, text="رضي الله عنها", width=50, height=50, font=(app_font, 20))
+bRA2.bind("<Enter>", bRA2_hover)
+bRA2.bind("<Leave>", unhover)
+bRA2.place(relx=0.1, rely=0.39)
 
-def hover7(event):
-    btn7["bg"] = hoverbg
-    copyinf.config(text="Raḥimahullāh (May Allah have mercy on him) (ALT + 7)")
+bRAH = CTkButton(master=itc, command=copyRAH, text="رحمه الله", width=50, height=50, font=(app_font, 20))
+bRAH.bind("<Enter>", bRAH_hover)
+bRAH.bind("<Leave>", unhover)
+bRAH.place(relx=0.31, rely=0.39)
 
-def hover7l(event):
-    btn7["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bHAF = CTkButton(master=itc, command=copyHAF, text="حفظه الله", width=50, height=50, font=(app_font, 20))
+bHAF.bind("<Enter>", bHAF_hover)
+bHAF.bind("<Leave>", unhover)
+bHAF.place(relx=0.47, rely=0.39)
 
-def hover8(event):
-    btn8["bg"] = hoverbg
-    copyinf.config(text="Ḥafiẓahullāh (May Allah preserve him) (ALT + 8)")
+bAS = CTkButton(master=itc, command=copyAS, text="عليه السلام", width=50, height=50, font=(app_font, 20))
+bAS.bind("<Enter>", bAS_hover)
+bAS.bind("<Leave>", unhover)
+bAS.place(relx=0.64, rely=0.39)
 
-def hover8l(event):
-    btn8["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bALH = CTkButton(master=itc, command=copyALH, text="الحمد لله", width=50, height=50, font=(app_font, 20))
+bALH.bind("<Enter>", bALH_hover)
+bALH.bind("<Leave>", unhover)
+bALH.place(relx=0.1, rely=0.58)
 
-def hover9(event):
-    btn9["bg"] = hoverbg
-    copyinf.config(text="ʿAlayhī as-Salām (Peace be upon him) (ALT + 9)")
+bJZK = CTkButton(master=itc, command=copyJZK, text="جزاك الله خيرا", width=50, height=50, font=(app_font, 20))
+bJZK.bind("<Enter>", bJZK_hover)
+bJZK.bind("<Leave>", unhover)
+bJZK.place(relx=0.26, rely=0.58)
 
-def hover9l(event):
-    btn9["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bBRK = CTkButton(master=itc, command=copyBRK, text="بارك الله فيك", width=50, height=50, font=(app_font, 20))
+bBRK.bind("<Enter>", bBRK_hover)
+bBRK.bind("<Leave>", unhover)
+bBRK.place(relx=0.47, rely=0.58)
 
-def hover10(event):
-    btn10["bg"] = hoverbg
-    copyinf.config(text="Alḥamdulillāh (All praises and thanks are due to Allāh) (ALT + 0)")
+bASL = CTkButton(master=itc, command=copyASL, text="السلام عليكم", width=50, height=50, font=(app_font, 20))
+bASL.bind("<Enter>", bASL_hover)
+bASL.bind("<Leave>", unhover)
+bASL.place(relx=0.67, rely=0.58)
 
-def hover10l(event):
-    btn10["bg"] = bg
-    copyinf.config(text=copyinf_d)
+bINS = CTkButton(master=itc, command=copyINS, text="إن شاء الله", width=50, height=40, font=(app_font, 16))
+bINS.bind("<Enter>", bINS_hover)
+bINS.bind("<Leave>", unhover)
+bINS.place(relx=0.1, rely=0.77)
 
-def hover11(event):
-    btn11["bg"] = hoverbg
-    copyinf.config(text="Jazāk Allāhu Khairan (May Allāh give you good) (ALT + - (Dash Symbol) )")
+bRA3 = CTkButton(master=itc, command=copyRA3, text="رضي الله عنهما", width=50, height=40, font=(app_font, 16))
+bRA3.bind("<Enter>", bRA3_hover)
+bRA3.bind("<Leave>", unhover)
+bRA3.place(relx=0.25, rely=0.77)
 
-def hover11l(event):
-    btn11["bg"] = bg
-    copyinf.config(text=copyinf_d)
+# hotkeys
 
-def hover12(event):
-    btn12["bg"] = hoverbg
-    copyinf.config(text="Bārik Allāhu Fīk (May Allāh bless you) (ALT + = (Equal Symbol) )")
+add_hotkey("alt+1", lambda : copy(bJAL.cget("text")))
+add_hotkey("alt+1", lambda : hover_tip.configure(text="Just copied: " + bJAL.cget("text")))
 
-def hover12l(event):
-    btn12["bg"] = bg
-    copyinf.config(text=copyinf_d)
+add_hotkey("alt+2", lambda : copy(bSWT.cget("text")))
+add_hotkey("alt+2", lambda : hover_tip.configure(text="Just copied: " + bSWT.cget("text")))
 
-def hover13(event):
-    btn13["bg"] = hoverbg
-    copyinf.config(text="As Salāmu ‘Alaikum (Peace be upon you) (ALT + [ (Left Square Bracket Symbol) )")
+add_hotkey("alt+3", lambda : copy(bAZW.cget("text")))
+add_hotkey("alt+3", lambda : hover_tip.configure(text="Just copied: " + bAZW.cget("text")))
 
-def hover13l(event):
-    btn13["bg"] = bg
-    copyinf.config(text=copyinf_d)
+add_hotkey("alt+4", lambda : copy(bSAW.cget("text")))
+add_hotkey("alt+4", lambda : hover_tip.configure(text="Just copied: " + bSAW.cget("text")))
 
-def hover14(event):
-    btn14["bg"] = hoverbg
-    copyinf.config(text="ʾIn shāʾ Allāh (If Allāh wills) (ALT + ] (Right Square Bracket Symbol) )")
+add_hotkey("alt+5", lambda : copy(bRA.cget("text")))
+add_hotkey("alt+5", lambda : hover_tip.configure(text="Just copied: " + bRA.cget("text")))
 
-def hover14l(event):
-    btn14["bg"] = bg
-    copyinf.config(text=copyinf_d)
+add_hotkey("alt+6", lambda : copy(bRA2.cget("text")))
+add_hotkey("alt+6", lambda : hover_tip.configure(text="Just copied: " + bRA2.cget("text")))
 
-def hoverc(event):
-    copyrighttxt["fg"] = "gray"
-    copyinf.config(text="Go to the Islāmic Text Copier website.")
+add_hotkey("alt+7", lambda : copy(bRAH.cget("text")))
+add_hotkey("alt+7", lambda : hover_tip.configure(text="Just copied: " + bRAH.cget("text")))
 
-def hovercl(event):
-    copyrighttxt["fg"] = "white"
-    copyinf.config(text=copyinf_d)
+add_hotkey("alt+8", lambda : copy(bHAF.cget("text")))
+add_hotkey("alt+8", lambda : hover_tip.configure(text="Just copied: " + bHAF.cget("text")))
 
-# gui
+add_hotkey("alt+9", lambda : copy(bAS.cget("text")))
+add_hotkey("alt+9", lambda : hover_tip.configure(text="Just copied: " + bAS.cget("text")))
 
-btn1_img = Image.open("resources/1.png")
-btn1_img_resized = btn1_img.resize((int(btn1_img.width * dpiscale), int(btn1_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn1_img = ImageTk.PhotoImage(btn1_img_resized)
+add_hotkey("alt+0", lambda : copy(bALH.cget("text")))
+add_hotkey("alt+0", lambda : hover_tip.configure(text="Just copied: " + bALH.cget("text")))
 
-btn2_img = Image.open("resources/2.png")
-btn2_img_resized = btn2_img.resize((int(btn2_img.width * dpiscale), int(btn2_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn2_img = ImageTk.PhotoImage(btn2_img_resized)
+add_hotkey("alt+-", lambda : copy(bJZK.cget("text")))
+add_hotkey("alt+-", lambda : hover_tip.configure(text="Just copied: " + bJZK.cget("text")))
 
-btn3_img = Image.open("resources/3.png")
-btn3_img_resized = btn3_img.resize((int(btn3_img.width * dpiscale), int(btn3_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn3_img = ImageTk.PhotoImage(btn3_img_resized)
-
-btn4_img = Image.open("resources/4.png")
-btn4_img_resized = btn4_img.resize((int(btn4_img.width * dpiscale), int(btn4_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn4_img = ImageTk.PhotoImage(btn4_img_resized)
-
-btn5_img = Image.open("resources/5.png")
-btn5_img_resized = btn5_img.resize((int(btn5_img.width * dpiscale), int(btn5_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn5_img = ImageTk.PhotoImage(btn5_img_resized)
-
-btn6_img = Image.open("resources/6.png")
-btn6_img_resized = btn6_img.resize((int(btn6_img.width * dpiscale), int(btn6_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn6_img = ImageTk.PhotoImage(btn6_img_resized)
-
-btn7_img = Image.open("resources/7.png")
-btn7_img_resized = btn7_img.resize((int(btn7_img.width * dpiscale), int(btn7_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn7_img = ImageTk.PhotoImage(btn7_img_resized)
-
-btn8_img = Image.open("resources/8.png")
-btn8_img_resized = btn8_img.resize((int(btn8_img.width * dpiscale), int(btn8_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn8_img = ImageTk.PhotoImage(btn8_img_resized)
-
-btn9_img = Image.open("resources/9.png")
-btn9_img_resized = btn9_img.resize((int(btn9_img.width * dpiscale), int(btn9_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn9_img = ImageTk.PhotoImage(btn9_img_resized)
-
-btn10_img = Image.open("resources/10.png")
-btn10_img_resized = btn10_img.resize((int(btn10_img.width * dpiscale), int(btn10_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn10_img = ImageTk.PhotoImage(btn10_img_resized)
-
-btn11_img = Image.open("resources/11.png")
-btn11_img_resized = btn11_img.resize((int(btn11_img.width * dpiscale), int(btn11_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn11_img = ImageTk.PhotoImage(btn11_img_resized)
-
-btn12_img = Image.open("resources/12.png")
-btn12_img_resized = btn12_img.resize((int(btn12_img.width * dpiscale), int(btn12_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn12_img = ImageTk.PhotoImage(btn12_img_resized)
-
-btn13_img = Image.open("resources/13.png")
-btn13_img_resized = btn13_img.resize((int(btn13_img.width * dpiscale), int(btn13_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn13_img = ImageTk.PhotoImage(btn13_img_resized)
-
-btn14_img = Image.open("resources/14.png")
-btn14_img_resized = btn14_img.resize((int(btn14_img.width * dpiscale), int(btn14_img.height * dpiscale)), Image.Resampling.LANCZOS)
-btn14_img = ImageTk.PhotoImage(btn14_img_resized)
-
-copyrighttxt = Label(text="© Nāṣir ʿAṭif\nv2.6", bg=bg, fg="white", font=(regfont, 12))
-copyrighttxt.place(x=8, y=8)
-copyrighttxt.bind("<Enter>", hoverc)
-copyrighttxt.bind("<Leave>", hovercl)
-copyrighttxt.bind("<Button-1>", lambda e:homeurl(homeurl))
-
-docubtn = Button(text="Documentation", command=hmsg, font=(regfont, 12), bg=docubtn_bg, activebackground=docubtn_bg, fg="white", activeforeground="white", borderwidth=0)
-docubtn.place(relx=0.5, rely=0.12, anchor=CENTER)
-docubtn.bind("<Enter>", hoverh)
-docubtn.bind("<Leave>", hoverhl)
-
-btn1 = Button(root, command=btn1, image=btn1_img, bg=bg, activebackground=bg, borderwidth=0)
-btn1.place(relx=0.13, rely=0.24)
-btn1.bind("<Enter>", hover1)
-btn1.bind("<Leave>", hover1l)
-
-btn2 = Button(root, command=btn2, image=btn2_img, bg=bg, activebackground=bg, borderwidth=0)
-btn2.place(relx=0.24, rely=0.26)
-btn2.bind("<Enter>", hover2)
-btn2.bind("<Leave>", hover2l)
-
-btn3 = Button(root, command=btn3, image=btn3_img, bg=bg, activebackground=bg, borderwidth=0)
-btn3.place(relx=0.33, rely=0.29)
-btn3.bind("<Enter>", hover3)
-btn3.bind("<Leave>", hover3l)
-
-btn4 = Button(root, command=btn4, image=btn4_img, bg=bg, activebackground=bg, borderwidth=0)
-btn4.place(relx=0.54, rely=0.28)
-btn4.bind("<Enter>", hover4)
-btn4.bind("<Leave>", hover4l)
-
-btn5 = Button(root, command=btn5, image=btn5_img, bg=bg, activebackground=bg, borderwidth=0)
-btn5.place(relx=0.67, rely=0.27)
-btn5.bind("<Enter>", hover5)
-btn5.bind("<Leave>", hover5l)
-
-btn6 = Button(root, command=btn6, image=btn6_img, bg=bg, activebackground=bg, borderwidth=0)
-btn6.place(relx=0.14, rely=0.45)
-btn6.bind("<Enter>", hover6)
-btn6.bind("<Leave>", hover6l)
-
-btn7 = Button(root, command=btn7, image=btn7_img, bg=bg, activebackground=bg, borderwidth=0)
-btn7.place(relx=0.34, rely=0.45)
-btn7.bind("<Enter>", hover7)
-btn7.bind("<Leave>", hover7l)
-
-btn8 = Button(root, command=btn8, image=btn8_img, bg=bg, activebackground=bg, borderwidth=0)
-btn8.place(relx=0.49, rely=0.45)
-btn8.bind("<Enter>", hover8)
-btn8.bind("<Leave>", hover8l)
-
-btn9 = Button(root, command=btn9, image=btn9_img, bg=bg, activebackground=bg, borderwidth=0)
-btn9.place(relx=0.65, rely=0.46)
-btn9.bind("<Enter>", hover9)
-btn9.bind("<Leave>", hover9l)
-
-btn10 = Button(root, command=btn10, image=btn10_img, bg=bg, activebackground=bg, borderwidth=0)
-btn10.place(relx=0.14, rely=0.62)
-btn10.bind("<Enter>", hover10)
-btn10.bind("<Leave>", hover10l)
-
-btn11 = Button(root, command=btn11, image=btn11_img, bg=bg, activebackground=bg, borderwidth=0)
-btn11.place(relx=0.29, rely=0.62)
-btn11.bind("<Enter>", hover11)
-btn11.bind("<Leave>", hover11l)
-
-btn12 = Button(root, command=btn12, image=btn12_img, bg=bg, activebackground=bg, borderwidth=0)
-btn12.place(relx=0.49, rely=0.62)
-btn12.bind("<Enter>", hover12)
-btn12.bind("<Leave>", hover12l)
-
-btn13 = Button(root, command=btn13, image=btn13_img, bg=bg, activebackground=bg, borderwidth=0)
-btn13.place(relx=0.69, rely=0.63)
-btn13.bind("<Enter>", hover13)
-btn13.bind("<Leave>", hover13l)
-
-btn14 = Button(root, command=btn14, image=btn14_img, bg=bg, activebackground=bg, borderwidth=0)
-btn14.place(relx=0.14, rely=0.75)
-btn14.bind("<Enter>", hover14)
-btn14.bind("<Leave>", hover14l)
-
-copyinf_d = "Hover over a text to see it's meaning in English"
-copyinf = Label(text=copyinf_d, font=(regfont, 12), bg=bg, fg="white")
-copyinf.pack(side="bottom", pady=15)
-
-# check if the system is connected to the internet before checking for updates
-# otherwise itc would crash
-
-def testnet():
-    try:
-        create_connection(("itc.nasiratif.net", 443))
-        return True
-    except OSError:
-        return False
-
-isconnected = testnet()
-
-# check for updates
-
- # set current version of itc in this variable:
-itcversion = 22
-
-if isconnected == True:
-    request = get("http://itc.nasiratif.net/version.txt")
-    open("version.txt", "wb").write(request.content)
+add_hotkey("alt+=", lambda : copy(bBRK.cget("text")))
+add_hotkey("alt+=", lambda : hover_tip.configure(text="Just copied: " + bBRK.cget("text")))
+
+add_hotkey("alt+[", lambda : copy(bASL.cget("text")))
+add_hotkey("alt+[", lambda : hover_tip.configure(text="Just copied: " + bASL.cget("text")))
+
+add_hotkey("alt+]", lambda : copy(bINS.cget("text")))
+add_hotkey("alt+]", lambda : hover_tip.configure(text="Just copied: " + bINS.cget("text")))
+
+add_hotkey("alt+;", lambda : copy(bRA3.cget("text")))
+add_hotkey("alt+;", lambda : hover_tip.configure(text="Just copied: " + bRA3.cget("text")))
+
+# update system
+
+def update_itc():
+    def test_connection():
+        try:
+            create_connection(("itc.nasiratif.net", 443))
+            return True
+        except:
+            return False
+
+    is_connected = test_connection()
+
+
+    # set itc version here:
+
+    itc_version = 23
+
+    if is_connected == True:
+        print("Checking for updates...")
+        request = get("http://itc.nasiratif.net/version.txt")
+        open("version.txt", "wb").write(request.content)
 
     if path.isfile(r"version.txt"):
         version_file = open(r"version.txt", "r")
         fileversion = version_file.read() .replace("\n", "").strip()
-        if float(fileversion) > float(itcversion):
+        if float(fileversion) > float(itc_version):
             version_file.close()
-            updatemsg = messagebox.askquestion(title="Update Available", message="Alḥamdulillāh, an update is available. Go to the home page to download it?")
-            if updatemsg == "yes":
-                webbrowser.open("http://itc.nasiratif.net")
-                root.destroy()
+            bUPD.place(relx=0.77, y=15)
+            print("An update is available")
+        else:
+            version_file.close()
+            print("No updates available")
 
-root.mainloop()
+update_thread = Thread(target=update_itc, daemon=True)
+update_thread.start()
+
+itc.mainloop()
