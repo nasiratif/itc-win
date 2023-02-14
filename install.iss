@@ -3,11 +3,11 @@
 
 #define MyAppName "Islāmic Text Copier"
 #define MyAppEXEName "itc.exe"
-#define MyAppPublisher "Nāṣir ʿAṭif"
+#define MyAppPublisher "ناصر عاطف (Nāṣir ʿAṭif)"
 
 [Setup]
 AppName={#MyAppName}
-AppVersion=2.6
+AppVersion=3.0
 WizardStyle=modern
 WizardImageFile="D:\Apps\Islamic Text Copier\Icons\install.bmp"
 DefaultDirName={localappdata}\nasiratif\Islamic Text Copier
@@ -22,10 +22,12 @@ PrivilegesRequired=lowest
 DisableWelcomePage=no
 [Messages]
 WelcomeLabel1=Welcome to the {#MyAppName} Installer
-WelcomeLabel2=Jazākallāhu Khairan, thank you for downloading my software!%n%nThe Islāmic Text Copier is a simple but very useful PC software that allows you to easily copy Arabic islamic texts to your clipboard. This is especially useful when writing articles.
+WelcomeLabel2=Jazākallāhu Khairan, thank you for downloading my software!%n%nThe Islāmic Text Copier is a simple but very useful PC software that allows you to easily copy Arabic islāmic texts to your clipboard. This is especially useful when writing articles.
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
    GroupDescription: "{cm:AdditionalIcons}";
+[InstallDelete]
+Type: filesandordirs; Name: "{localappdata}\nasiratif\Islamic Text Copier\*"
 [Files]
 Source: "D:\Apps\Islamic Text Copier\Code\itc\*"; DestDir: "{app}"; Excludes: "version.txt"; Flags: recursesubdirs
 
