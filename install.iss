@@ -7,7 +7,7 @@
 
 [Setup]
 AppName={#MyAppName}
-AppVersion=3.0
+AppVersion=4.0
 WizardStyle=modern
 WizardImageFile="D:\Apps\Islamic Text Copier\Icons\install.bmp"
 DefaultDirName={localappdata}\nasiratif\Islamic Text Copier
@@ -29,7 +29,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
 [InstallDelete]
 Type: filesandordirs; Name: "{localappdata}\nasiratif\Islamic Text Copier\*"
 [Files]
-Source: "D:\Apps\Islamic Text Copier\Code\itc\*"; DestDir: "{app}"; Excludes: "version.txt"; Flags: recursesubdirs
+Source: "D:\Apps\Islamic Text Copier\Code\itc\Release Build\*"; DestDir: "{app}"; Excludes: "version.txt"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\Islāmic Text Copier"; Filename: "{app}\itc.exe"
