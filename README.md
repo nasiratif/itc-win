@@ -6,7 +6,7 @@ The release can be downloaded at it's official home page: https://itc.nasiratif.
 # Contributions
 I decided to open-source this program so that anyone can contribute to it, like fixing bugs and adding more texts. It is programmed entirely in C++.
 
-To setup the ITC source, you'll need to Visual Studio 2019, and add an `include` and `lib` folder in the project directory with the SFML files inside (https://www.sfml-dev.org/download/sfml/2.5.1/).
+To setup the ITC source, you'll require Visual Studio 2019, and add an `include` and `lib` folder in the project directory with the SFML files inside (https://www.sfml-dev.org/download/sfml/2.5.1/).
 
 The Inno Setup source is also included (you will need to change the directories inside however).
 
