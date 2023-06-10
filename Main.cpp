@@ -1,4 +1,5 @@
 ﻿// Islāmic Text Copier Revision 4
+// Arabic font used is Jali Arabic
 // © ناصر عاطف (Nāṣir ʿAṭif)
 
 typedef struct IUnknown IUnknown; // To allow the XP toolset to behave
@@ -31,7 +32,7 @@ void Update(void);
 bool doNotExecAgain = false;
 
 // Main function
-int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
+int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 {
 	// Get DPI because DPI-aware apps are underrated
 	HDC dc = GetDC(nullptr);
@@ -43,7 +44,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 	OutputDebugStringA("\n");
 
 	// Initialize window
-	sf::RenderWindow window(sf::VideoMode(720 * dpiFactor, 450 * dpiFactor), L"Islāmic Text Copier", sf::Style::Titlebar | sf::Style::Close);
+	uint32_t width = (uint32_t)(720 * dpiFactor);
+	uint32_t height = (uint32_t)(450 * dpiFactor);
+	sf::RenderWindow window(sf::VideoMode(width, height), L"Islāmic Text Copier", sf::Style::Titlebar | sf::Style::Close);
 
 	// Make window top-most
 	SetWindowPos(window.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
@@ -122,6 +125,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 	sf::Texture texSUB;
 	if (!texSUB.loadFromFile("images\\SUB.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"SUB\". You may need to reinstall ITC.", L"Error", 0);
 	texSUB.setSmooth(true);
+
+	sf::Texture texWAI;
+	if (!texWAI.loadFromFile("images\\WAI.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"WAI\". You may need to reinstall ITC.", L"Error", 0);
+	texWAI.setSmooth(true);
 
 	// Button sprites
 	sf::Sprite JAL;
@@ -204,6 +211,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 	SUB.setTexture(texSUB, true);
 	SUB.setScale(sf::Vector2f(dpiFactor, dpiFactor));
 
+	sf::Sprite WAI;
+	WAI.setPosition(sf::Vector2f(525.f * dpiFactor, 340.f * dpiFactor));
+	WAI.setTexture(texWAI, true);
+	WAI.setScale(sf::Vector2f(dpiFactor, dpiFactor));
+
 	// ^^
 
 	// Add font stuffs
@@ -211,11 +223,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 	
 	// Add copyright text
 	sf::Text copyright;
-	const wchar_t* copyrightString = L"© Nāṣir ʿAṭif\nv4.0";
+	const wchar_t* copyrightString = L"© Nāṣir ʿAṭif\nv4.1";
 
 	// Set copyright font stuffs
 	copyright.setFont(font);
-	copyright.setCharacterSize(18 * dpiFactor);
+	copyright.setCharacterSize((uint32_t)(18 * dpiFactor));
 	copyright.setString(copyrightString);
 	copyright.setFillColor(fontColor);
 	copyright.setPosition(sf::Vector2f(15.f * dpiFactor, 15.f * dpiFactor));
@@ -225,14 +237,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 
 	// Set documentation button stuffs
 	viewDoc.setFont(font);
-	viewDoc.setCharacterSize(18 * dpiFactor);
+	viewDoc.setCharacterSize((uint32_t)(18 * dpiFactor));
 	viewDoc.setString("View documentation");
 	viewDoc.setFillColor(fontColor2);
 	viewDoc.setPosition(sf::Vector2f(125.f * dpiFactor, 15.f * dpiFactor));
 
 	// Set update button stuffs
 	update.setFont(font);
-	update.setCharacterSize(18 * dpiFactor);
+	update.setCharacterSize((uint32_t)(18 * dpiFactor));
 	update.setString("Update Available!");
 	update.setFillColor(fontColor3);
 	update.setPosition(sf::Vector2f(295.f * dpiFactor, 15.f * dpiFactor));
@@ -247,7 +259,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 
 	// Set tip font stuffs
 	tip.setFont(font);
-	tip.setCharacterSize(18 * dpiFactor);
+	tip.setCharacterSize((uint32_t)(18 * dpiFactor));
 	tip.setString(L"Hover over a text to see it's translation in English");
 	tip.setFillColor(fontColor);
 	tip.setPosition(sf::Vector2f(15.f * dpiFactor, 410.f * dpiFactor));
@@ -257,7 +269,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 
 	// Set copy notification font stuffs
 	copyNotif.setFont(font);
-	copyNotif.setCharacterSize(18 * dpiFactor);
+	copyNotif.setCharacterSize((uint32_t)(18 * dpiFactor));
 	copyNotif.setString("Copied!");
 	copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 0));
 	copyNotif.setPosition(sf::Vector2f(635.f * dpiFactor, 15.f * dpiFactor));
@@ -272,7 +284,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 	while (window.isOpen())
 	{
 		// Rather lazy way of making tip effects
-
 		if (tipTimer < 320)
 		{
 			tipTimer++;
@@ -288,99 +299,105 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 		}
 
 		// Hotkeys
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
 		{
 			Clipboard(L"ﷻ");
 			JAL.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 		{
 			Clipboard(L"سبحانه و تعالى");
 			SWT.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
 		{
 			Clipboard(L"عز و جل");
 			AZW.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
 		{
 			Clipboard(L"ﷺ");
 			SAW.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
 		{
 			Clipboard(L"رضي الله عنه");
 			RA1.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
 		{
 			Clipboard(L"رضي الله عنها");
 			RA2.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
 		{
 			Clipboard(L"رحمه الله");
 			RAH.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
 		{
 			Clipboard(L"حفظه الله");
 			HAF.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
 		{
 			Clipboard(L"عليه السلام");
 			AS.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
 		{
 			Clipboard(L"الحمد لله");
 			ALH.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Hyphen))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Hyphen))
 		{
 			Clipboard(L"جزاك الله خيرا");
 			JZK.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Equal))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Equal))
 		{
 			Clipboard(L"بارك الله فيك");
 			BRK.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::LBracket))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::LBracket))
 		{
 			Clipboard(L"السلام عليكم");
 			ASL.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::RBracket))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::RBracket))
 		{
 			Clipboard(L"إن شاء الله");
 			INS.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Semicolon))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Semicolon))
 		{
 			Clipboard(L"رضي الله عنهما");
 			RA3.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::Quote))
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Quote))
 		{
 			Clipboard(L"سبحان الله");
+			SUB.setColor(sf::Color(255, 255, 255, 255));
+			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
+		}
+		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Slash))
+		{
+			Clipboard(L"و إياك");
 			SUB.setColor(sf::Color(255, 255, 255, 255));
 			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 		}
@@ -945,6 +962,35 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 				}
 			}
 
+			// WAI button
+			if (WAI.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
+			{
+				tip.setString(L"Wa Iyyāk (And you) (ALT + /)");
+				tipTimeout = true;
+				tipDismissed = false;
+				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
+
+				// Actually copy it
+				if (event.type == sf::Event::MouseButtonPressed)
+				{
+					Clipboard(L"و إياك");
+					WAI.setColor(sf::Color(255, 255, 255, 255));
+					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
+				}
+
+				if (WAI.getColor().a > 150)
+				{
+					WAI.setColor(sf::Color(255, 255, 255, Min(150, WAI.getColor().a - 15)));
+				}
+			}
+			else
+			{
+				if (WAI.getColor().a < 255)
+				{
+					WAI.setColor(sf::Color(255, 255, 255, Max(WAI.getColor().a + 15, 255)));
+				}
+			}
+
 			// Close window when the user requests to do so
 			if (event.type == sf::Event::Closed)
 				window.close();
@@ -1001,6 +1047,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
 		window.draw(INS);
 		window.draw(RA3);
 		window.draw(SUB);
+		window.draw(WAI);
 		window.draw(viewDoc);
 		window.draw(update);
 		window.draw(copyright);
@@ -1037,7 +1084,7 @@ void Clipboard(const wchar_t* string)
 void Update()
 {
 	// Set current ITC version here:
-	unsigned int itcVersion = 24;
+	unsigned int itcVersion = 25;
 
 	HRESULT updateHR;
 
@@ -1045,7 +1092,7 @@ void Update()
 	updateHR = URLDownloadToFile(NULL, L"https://itc.nasiratif.net/version.txt", L"version.txt", BINDF_GETNEWESTVERSION, NULL);
 
 	// If OK, actually start checking if there's an update
-	if (updateHR == S_OK)
+	if (SUCCEEDED(updateHR))
 	{
 		OutputDebugStringA("URL download succeeded!");
 		
