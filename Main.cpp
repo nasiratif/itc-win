@@ -2,6 +2,9 @@
 // Arabic font used is Jali Arabic
 // © ناصر عاطف (Nāṣir ʿAṭif)
 
+// Set current ITC version here:
+#define ITC_THIS_VERSION 26
+
 typedef struct IUnknown IUnknown; // To allow the XP toolset to behave
 
 #include <SFML\Window.hpp>
@@ -15,11 +18,23 @@ typedef struct IUnknown IUnknown; // To allow the XP toolset to behave
 #include <iostream>
 
 #pragma comment (lib, "urlmon.lib")
+#pragma comment(lib, "opengl32.lib")
+#if defined(_DEBUG)
+#pragma comment(lib, "SFML\\sfml-window-d.lib")
+#pragma comment(lib, "SFML\\sfml-graphics-d.lib")
+#pragma comment(lib, "SFML\\sfml-system-d.lib")
+#else
+#pragma comment(lib, "SFML\\sfml-window.lib")
+#pragma comment(lib, "SFML\\sfml-graphics.lib")
+#pragma comment(lib, "SFML\\sfml-system.lib")
+#endif
 
 // Global declarations
 FILE *file;
 
+// Default font
 sf::Font font;
+// Font colors
 sf::Color fontColor = sf::Color(207, 255, 255, 255);
 sf::Color fontColor2 = sf::Color(177, 216, 216, 255);
 sf::Color fontColor3 = sf::Color(175, 217, 236, 255);
@@ -29,19 +44,20 @@ bool updateBtnActivated = false;
 
 void Clipboard(const wchar_t* string);
 void Update(void);
-bool doNotExecAgain = false;
 
 // Main function
-int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
+int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
 	// Get DPI because DPI-aware apps are underrated
-	HDC dc = GetDC(nullptr);
-	float dpiFactor = GetDeviceCaps(dc, LOGPIXELSX) / 96.f;
-	ReleaseDC(nullptr, dc);
+	HDC dc = GetDC(NULL);
+	float dpiFactor = GetDeviceCaps(dc, LOGPIXELSX) / 96.0f;
+	ReleaseDC(NULL, dc);
 
+#if defined(_DEBUG)
 	OutputDebugStringA("DPI : ");
 	OutputDebugStringA(std::to_string(dpiFactor).c_str());
 	OutputDebugStringA("\n");
+#endif
 
 	// Initialize window
 	uint32_t width = (uint32_t)(720 * dpiFactor);
@@ -56,78 +72,78 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdS
 	
 	// Add icon
 	sf::Image icon;
-	if (!icon.loadFromFile("icons\\icon.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"icon\". You may need to reinstall ITC.", L"Error", 0);
+	if (!icon.loadFromFile("icons\\icon.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"icon\". You may need to reinstall ITC.", L"Error", 0);
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
 	// Buttons:
 
 	// Button textures
 	sf::Texture texJAL;
-	if (!texJAL.loadFromFile("images\\JAL.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"JAL\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texJAL.loadFromFile("images\\JAL.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"JAL\". You may need to reinstall ITC.", L"Error", 0);
 	texJAL.setSmooth(true);
 
 	sf::Texture texSWT;
-	if (!texSWT.loadFromFile("images\\SWT.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"SWT\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texSWT.loadFromFile("images\\SWT.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"SWT\". You may need to reinstall ITC.", L"Error", 0);
 	texSWT.setSmooth(true);
 
 	sf::Texture texAZW;
-	if (!texAZW.loadFromFile("images\\AZW.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"AZW\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texAZW.loadFromFile("images\\AZW.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"AZW\". You may need to reinstall ITC.", L"Error", 0);
 	texAZW.setSmooth(true);
 
 	sf::Texture texSAW;
-	if (!texSAW.loadFromFile("images\\SAW.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"SAW\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texSAW.loadFromFile("images\\SAW.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"SAW\". You may need to reinstall ITC.", L"Error", 0);
 	texSAW.setSmooth(true);
 
 	sf::Texture texRA1;
-	if (!texRA1.loadFromFile("images\\RA1.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"RA1\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texRA1.loadFromFile("images\\RA1.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RA1\". You may need to reinstall ITC.", L"Error", 0);
 	texRA1.setSmooth(true);
 
 	sf::Texture texRA2;
-	if (!texRA2.loadFromFile("images\\RA2.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"RA2\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texRA2.loadFromFile("images\\RA2.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RA2\". You may need to reinstall ITC.", L"Error", 0);
 	texRA2.setSmooth(true);
 
 	sf::Texture texRAH;
-	if (!texRAH.loadFromFile("images\\RAH.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"RAH\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texRAH.loadFromFile("images\\RAH.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RAH\". You may need to reinstall ITC.", L"Error", 0);
 	texRAH.setSmooth(true);
 
 	sf::Texture texHAF;
-	if (!texHAF.loadFromFile("images\\HAF.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"HAF\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texHAF.loadFromFile("images\\HAF.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"HAF\". You may need to reinstall ITC.", L"Error", 0);
 	texHAF.setSmooth(true);
 
 	sf::Texture texAS;
-	if (!texAS.loadFromFile("images\\AS.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"AS\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texAS.loadFromFile("images\\AS.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"AS\". You may need to reinstall ITC.", L"Error", 0);
 	texAS.setSmooth(true);
 
 	sf::Texture texALH;
-	if (!texALH.loadFromFile("images\\ALH.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"ALH\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texALH.loadFromFile("images\\ALH.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"ALH\". You may need to reinstall ITC.", L"Error", 0);
 	texALH.setSmooth(true);
 
 	sf::Texture texJZK;
-	if (!texJZK.loadFromFile("images\\JZK.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"JZK\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texJZK.loadFromFile("images\\JZK.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"JZK\". You may need to reinstall ITC.", L"Error", 0);
 	texJZK.setSmooth(true);
 
 	sf::Texture texBRK;
-	if (!texBRK.loadFromFile("images\\BRK.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"BRK\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texBRK.loadFromFile("images\\BRK.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"BRK\". You may need to reinstall ITC.", L"Error", 0);
 	texBRK.setSmooth(true);
 
 	sf::Texture texASL;
-	if (!texASL.loadFromFile("images\\ASL.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"ASL\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texASL.loadFromFile("images\\ASL.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"ASL\". You may need to reinstall ITC.", L"Error", 0);
 	texASL.setSmooth(true);
 
 	sf::Texture texINS;
-	if (!texINS.loadFromFile("images\\INS.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"INS\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texINS.loadFromFile("images\\INS.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"INS\". You may need to reinstall ITC.", L"Error", 0);
 	texINS.setSmooth(true);
 
 	sf::Texture texRA3;
-	if (!texRA3.loadFromFile("images\\RA3.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"RA3\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texRA3.loadFromFile("images\\RA3.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RA3\". You may need to reinstall ITC.", L"Error", 0);
 	texRA3.setSmooth(true);
 
 	sf::Texture texSUB;
-	if (!texSUB.loadFromFile("images\\SUB.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"SUB\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texSUB.loadFromFile("images\\SUB.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"SUB\". You may need to reinstall ITC.", L"Error", 0);
 	texSUB.setSmooth(true);
 
 	sf::Texture texWAI;
-	if (!texWAI.loadFromFile("images\\WAI.png")) MessageBoxW(window.getSystemHandle(), L"Couldn't load texture \"WAI\". You may need to reinstall ITC.", L"Error", 0);
+	if (!texWAI.loadFromFile("images\\WAI.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"WAI\". You may need to reinstall ITC.", L"Error", 0);
 	texWAI.setSmooth(true);
 
 	// Button sprites
@@ -219,11 +235,11 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdS
 	// ^^
 
 	// Add font stuffs
-	if (!font.loadFromFile("fonts\\calibri.ttf")) MessageBoxW(window.getSystemHandle(), L"Couldn't load font \"Calibri\". You may need to reinstall ITC.", L"Error", 0);
+	if (!font.loadFromFile("fonts\\calibri.ttf")) MessageBox(window.getSystemHandle(), L"Couldn't load font \"Calibri\". You may need to reinstall ITC.", L"Error", 0);
 	
 	// Add copyright text
 	sf::Text copyright;
-	const wchar_t* copyrightString = L"© Nāṣir ʿAṭif\nv4.1";
+	const wchar_t* copyrightString = L"© Nāṣir ʿAṭif\nv4.2";
 
 	// Set copyright font stuffs
 	copyright.setFont(font);
@@ -280,6 +296,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdS
 	// Attempt updating, and do it in another thread in case it's slow
 	std::thread updateThread(Update);
 
+	// Only used for one if statement
+	bool doNotExecAgain = false;
 	// Main loop
 	while (window.isOpen())
 	{
@@ -965,7 +983,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdS
 			// WAI button
 			if (WAI.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
 			{
-				tip.setString(L"Wa Iyyāk (And you) (ALT + /)");
+				tip.setString(L"Wa Iyyākum (And you) (ALT + /)");
 				tipTimeout = true;
 				tipDismissed = false;
 				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
@@ -973,7 +991,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdS
 				// Actually copy it
 				if (event.type == sf::Event::MouseButtonPressed)
 				{
-					Clipboard(L"و إياك");
+					Clipboard(L"وإياكم");
 					WAI.setColor(sf::Color(255, 255, 255, 255));
 					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
 				}
@@ -1067,13 +1085,16 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdS
 
 // Functions
 
-void Clipboard(const wchar_t* string)
+// Copies text to clipboard
+inline void Clipboard(const wchar_t* string)
 {
 	const wchar_t* output = string;
 	const size_t len = (wcslen(output) + 1) * sizeof(wchar_t);
+
 	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
 	memcpy(GlobalLock(hMem), output, len);
 	GlobalUnlock(hMem);
+
 	OpenClipboard(0);
 	EmptyClipboard();
 	SetClipboardData(CF_UNICODETEXT, hMem);
@@ -1083,40 +1104,43 @@ void Clipboard(const wchar_t* string)
 // Function to check for updates
 void Update()
 {
-	// Set current ITC version here:
-	unsigned int itcVersion = 25;
-
-	HRESULT updateHR;
-
 	// Download latest version file from website
-	updateHR = URLDownloadToFile(NULL, L"https://itc.nasiratif.net/version.txt", L"version.txt", BINDF_GETNEWESTVERSION, NULL);
-
 	// If OK, actually start checking if there's an update
-	if (SUCCEEDED(updateHR))
+	if (SUCCEEDED(URLDownloadToFile(NULL, L"https://itc.nasiratif.net/version.txt", L"version.txt", BINDF_GETNEWESTVERSION, NULL)))
 	{
+#if defined(_DEBUG)
 		OutputDebugStringA("URL download succeeded!");
+#endif
 		
 		// Do some stuff to get the latest version from the website
 		file = fopen("version.txt", "r");
 		const unsigned MAX_LENGTH = 256;
 		char buffer[MAX_LENGTH];
 		const char* sLatestVersion = fgets(buffer, MAX_LENGTH, file);
-		unsigned int latestVersion = atoi(sLatestVersion);
+		uint32_t latestVersion = atoi(sLatestVersion);
+
+#if defined(_DEBUG)
 		OutputDebugStringA("\nLatest version polled from website: ");
 		OutputDebugStringA(sLatestVersion);
 		OutputDebugStringA("\n");
+#endif
 
 		// If this version is outdated, do some stuff
-		if (latestVersion > itcVersion)
+		if (latestVersion > ITC_THIS_VERSION)
 		{
 			updateBtnActivated = true;
 			if (updateBtnActivated) update.setFillColor(sf::Color(fontColor3.r, fontColor3.g, fontColor3.b, 255));
+#if defined(_DEBUG)
 			OutputDebugStringA("Update available\n");
+#endif
 		}
 
 		fclose(file);
 	}
-	else {
+#if defined(_DEBUG)
+	else
+	{
 		OutputDebugStringA("Couldn't check for updates..\n");
 	}
+#endif
 }
