@@ -12,7 +12,7 @@ The Inno Setup source is also included (you will need to change the directories 
 
 ## Adding texts
 Adding new texts is as simple as just adding new members into the `itcButtons` array in **Texts.h** and filling out the TextInfo struct:
-1. The `name` member is the Arabic text, ITC will copy this string when the user presses it
+1. The `name` member is the Arabic text, ITC will copy this string when the user presses the button
 2. The `tooltip` member is the tooltip displayed on the bottom left; this is supposed to display the English transliteration and translation along with it's hotkey
 3. `image` is the image filename of the text, ITC will look for it in the **images** directory with the **.png** extension
 4. `key1` & `key2` are `sf::Keyboard` keys which register the hotkey for the text
