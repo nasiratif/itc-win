@@ -61,8 +61,8 @@ IDI_ICON1               ICON                    "icon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,2,0,0
- PRODUCTVERSION 4,2,0,0
+ FILEVERSION 4,3,0,0
+ PRODUCTVERSION 4,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,12 +79,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Nasir 'Abd al-Haqq 'Atif ibn Salim 'Abd al-Malik"
             VALUE "FileDescription", "Islamic Text Copier"
-            VALUE "FileVersion", "4.2.0.0"
+            VALUE "FileVersion", "4.3.0.0"
             VALUE "InternalName", "itc.exe"
-            VALUE "LegalCopyright", "Copyright (C) 1444AH Nasir 'Abd al-Haqq 'Atif ibn Salim 'Abd al-Malik"
+            VALUE "LegalCopyright", "Copyright (C) 1446AH Nasir 'Abd al-Haqq 'Atif ibn Salim 'Abd al-Malik"
             VALUE "OriginalFilename", "itc.exe"
             VALUE "ProductName", "Islamic Text Copier"
-            VALUE "ProductVersion", "4.2.0.0"
+            VALUE "ProductVersion", "4.3.0.0"
         END
     END
     BLOCK "VarFileInfo"

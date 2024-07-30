@@ -1,24 +1,8 @@
-﻿// Islāmic Text Copier Revision 4
-// Arabic font used is Jali Arabic
-// © ناصر عاطف (Nāṣir ʿAṭif)
-
-// Set current ITC version here:
-#define ITC_THIS_VERSION 26
-
-typedef struct IUnknown IUnknown; // To allow the XP toolset to behave
-
-#include <SFML\Window.hpp>
-#include <SFML\Graphics.hpp>
-#include <SFML\Window\Keyboard.hpp>
-#include <SFML\Window\Mouse.hpp>
-#include "range.h"
-#include <UrlMon.h>
-#include <Windows.h>
-#include <thread>
-#include <iostream>
+﻿#include "Main.h"
 
 #pragma comment (lib, "urlmon.lib")
 #pragma comment(lib, "opengl32.lib")
+
 #if defined(_DEBUG)
 #pragma comment(lib, "SFML\\sfml-window-d.lib")
 #pragma comment(lib, "SFML\\sfml-graphics-d.lib")
@@ -30,27 +14,36 @@ typedef struct IUnknown IUnknown; // To allow the XP toolset to behave
 #endif
 
 // Global declarations
-FILE *file;
+//FILE *file;
 
-// Default font
-sf::Font font;
-// Font colors
-sf::Color fontColor = sf::Color(207, 255, 255, 255);
-sf::Color fontColor2 = sf::Color(177, 216, 216, 255);
-sf::Color fontColor3 = sf::Color(175, 217, 236, 255);
-
-sf::Text update;
+//sf::Text update;
 bool updateBtnActivated = false;
 
-void Clipboard(const wchar_t* string);
-void Update(void);
-
-// Main function
-int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
+// BUTTON ACTIONS:
+// -----
+void Website(sf::Window& window)
 {
-	// Get DPI because DPI-aware apps are underrated
+	ShellExecute(NULL, L"open", ITC_STR_WEBSITE, NULL, NULL, SW_SHOWNORMAL);
+	ShowWindow(window.getSystemHandle(), SW_MINIMIZE);
+}
+void Documentation(sf::Window& window)
+{
+	ShellExecute(NULL, L"open", L"ITC_Documentation.pdf", NULL, NULL, SW_SHOWNORMAL);
+	ShowWindow(window.getSystemHandle(), SW_MINIMIZE);
+}
+// -----
+
+/*
+
+---------- MAIN FUNCTION ----------
+
+*/
+
+int ITC::Main()
+{
+	// Be aware of screen DPI, very important!
 	HDC dc = GetDC(NULL);
-	float dpiFactor = GetDeviceCaps(dc, LOGPIXELSX) / 96.0f;
+	dpiFactor = GetDeviceCaps(dc, LOGPIXELSX) / 96.0f;
 	ReleaseDC(NULL, dc);
 
 #if defined(_DEBUG)
@@ -59,1083 +52,393 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	OutputDebugStringA("\n");
 #endif
 
-	// Initialize window
-	uint32_t width = (uint32_t)(720 * dpiFactor);
-	uint32_t height = (uint32_t)(450 * dpiFactor);
-	sf::RenderWindow window(sf::VideoMode(width, height), L"Islāmic Text Copier", sf::Style::Titlebar | sf::Style::Close);
+	// Create main window
+	window.create(sf::VideoMode((uint)(ITC_WIDTH * dpiFactor), (uint)(ITC_HEIGHT * dpiFactor)), ITC_APP_NAME, sf::Style::Titlebar | sf::Style::Close);
+
+	if (!icon.loadFromFile("icons\\icon.png"))
+		MessageBox(window.getSystemHandle(), ITC_STR_ERR_MSG(ITC_ICON_FILE).c_str(), L"Error", 0);
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
 	// Make window top-most
 	SetWindowPos(window.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-	// Cap framerate to 60
+	// Make sure app logic isn't excecuted too fast (and also reduce CPU usage)
 	window.setFramerateLimit(60);
-	
-	// Add icon
-	sf::Image icon;
-	if (!icon.loadFromFile("icons\\icon.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"icon\". You may need to reinstall ITC.", L"Error", 0);
-	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
-	// Buttons:
+	if (!font.loadFromFile(ITC_FONT_FILE))
+		MessageBox(window.getSystemHandle(), ITC_STR_ERR_MSG(ITC_FONT_FILE).c_str(), L"Error", 0);
 
-	// Button textures
-	sf::Texture texJAL;
-	if (!texJAL.loadFromFile("images\\JAL.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"JAL\". You may need to reinstall ITC.", L"Error", 0);
-	texJAL.setSmooth(true);
+	// Parse all buttons:
+	for (TextInfo& info : itcButtons)
+	{
+		ImportImage(std::string("images\\" + info.image + ".png"), info.image);
+		AddCopyableButton(info.text, info.image, info.tooltip, info.key1, info.key2, info.fontShrink);
+	}
 
-	sf::Texture texSWT;
-	if (!texSWT.loadFromFile("images\\SWT.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"SWT\". You may need to reinstall ITC.", L"Error", 0);
-	texSWT.setSmooth(true);
-
-	sf::Texture texAZW;
-	if (!texAZW.loadFromFile("images\\AZW.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"AZW\". You may need to reinstall ITC.", L"Error", 0);
-	texAZW.setSmooth(true);
-
-	sf::Texture texSAW;
-	if (!texSAW.loadFromFile("images\\SAW.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"SAW\". You may need to reinstall ITC.", L"Error", 0);
-	texSAW.setSmooth(true);
-
-	sf::Texture texRA1;
-	if (!texRA1.loadFromFile("images\\RA1.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RA1\". You may need to reinstall ITC.", L"Error", 0);
-	texRA1.setSmooth(true);
-
-	sf::Texture texRA2;
-	if (!texRA2.loadFromFile("images\\RA2.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RA2\". You may need to reinstall ITC.", L"Error", 0);
-	texRA2.setSmooth(true);
-
-	sf::Texture texRAH;
-	if (!texRAH.loadFromFile("images\\RAH.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RAH\". You may need to reinstall ITC.", L"Error", 0);
-	texRAH.setSmooth(true);
-
-	sf::Texture texHAF;
-	if (!texHAF.loadFromFile("images\\HAF.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"HAF\". You may need to reinstall ITC.", L"Error", 0);
-	texHAF.setSmooth(true);
-
-	sf::Texture texAS;
-	if (!texAS.loadFromFile("images\\AS.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"AS\". You may need to reinstall ITC.", L"Error", 0);
-	texAS.setSmooth(true);
-
-	sf::Texture texALH;
-	if (!texALH.loadFromFile("images\\ALH.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"ALH\". You may need to reinstall ITC.", L"Error", 0);
-	texALH.setSmooth(true);
-
-	sf::Texture texJZK;
-	if (!texJZK.loadFromFile("images\\JZK.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"JZK\". You may need to reinstall ITC.", L"Error", 0);
-	texJZK.setSmooth(true);
-
-	sf::Texture texBRK;
-	if (!texBRK.loadFromFile("images\\BRK.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"BRK\". You may need to reinstall ITC.", L"Error", 0);
-	texBRK.setSmooth(true);
-
-	sf::Texture texASL;
-	if (!texASL.loadFromFile("images\\ASL.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"ASL\". You may need to reinstall ITC.", L"Error", 0);
-	texASL.setSmooth(true);
-
-	sf::Texture texINS;
-	if (!texINS.loadFromFile("images\\INS.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"INS\". You may need to reinstall ITC.", L"Error", 0);
-	texINS.setSmooth(true);
-
-	sf::Texture texRA3;
-	if (!texRA3.loadFromFile("images\\RA3.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"RA3\". You may need to reinstall ITC.", L"Error", 0);
-	texRA3.setSmooth(true);
-
-	sf::Texture texSUB;
-	if (!texSUB.loadFromFile("images\\SUB.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"SUB\". You may need to reinstall ITC.", L"Error", 0);
-	texSUB.setSmooth(true);
-
-	sf::Texture texWAI;
-	if (!texWAI.loadFromFile("images\\WAI.png")) MessageBox(window.getSystemHandle(), L"Couldn't load texture \"WAI\". You may need to reinstall ITC.", L"Error", 0);
-	texWAI.setSmooth(true);
-
-	// Button sprites
-	sf::Sprite JAL;
-	JAL.setPosition(sf::Vector2f(60.f * dpiFactor, 90.f * dpiFactor));
-	JAL.setTexture(texJAL, true);
-	JAL.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite SWT;
-	SWT.setPosition(sf::Vector2f(150.f * dpiFactor, 90.f * dpiFactor));
-	SWT.setTexture(texSWT, true);
-	SWT.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite AZW;
-	AZW.setPosition(sf::Vector2f(298.f * dpiFactor, 90.f * dpiFactor));
-	AZW.setTexture(texAZW, true);
-	AZW.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite SAW;
-	SAW.setPosition(sf::Vector2f(447.f * dpiFactor, 90.f * dpiFactor));
-	SAW.setTexture(texSAW, true);
-	SAW.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite RA1;
-	RA1.setPosition(sf::Vector2f(537.f * dpiFactor, 90.f * dpiFactor));
-	RA1.setTexture(texRA1, true);
-	RA1.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite RA2;
-	RA2.setPosition(sf::Vector2f(60.f * dpiFactor, 177.f * dpiFactor));
-	RA2.setTexture(texRA2, true);
-	RA2.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite RAH;
-	RAH.setPosition(sf::Vector2f(209.f * dpiFactor, 177.f * dpiFactor));
-	RAH.setTexture(texRAH, true);
-	RAH.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite HAF;
-	HAF.setPosition(sf::Vector2f(358.f * dpiFactor, 177.f * dpiFactor));
-	HAF.setTexture(texHAF, true);
-	HAF.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite AS;
-	AS.setPosition(sf::Vector2f(508.f * dpiFactor, 177.f * dpiFactor));
-	AS.setTexture(texAS, true);
-	AS.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite ALH;
-	ALH.setPosition(sf::Vector2f(60.f * dpiFactor, 264.f * dpiFactor));
-	ALH.setTexture(texALH, true);
-	ALH.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite JZK;
-	JZK.setPosition(sf::Vector2f(208.f * dpiFactor, 264.f * dpiFactor));
-	JZK.setTexture(texJZK, true);
-	JZK.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite BRK;
-	BRK.setPosition(sf::Vector2f(366.f * dpiFactor, 264.f * dpiFactor));
-	BRK.setTexture(texBRK, true);
-	BRK.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite ASL;
-	ASL.setPosition(sf::Vector2f(522.f * dpiFactor, 264.f * dpiFactor));
-	ASL.setTexture(texASL, true);
-	ASL.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite INS;
-	INS.setPosition(sf::Vector2f(60.f * dpiFactor, 340.f * dpiFactor));
-	INS.setTexture(texINS, true);
-	INS.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite RA3;
-	RA3.setPosition(sf::Vector2f(215.f * dpiFactor, 340.f * dpiFactor));
-	RA3.setTexture(texRA3, true);
-	RA3.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite SUB;
-	SUB.setPosition(sf::Vector2f(370.f * dpiFactor, 340.f * dpiFactor));
-	SUB.setTexture(texSUB, true);
-	SUB.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	sf::Sprite WAI;
-	WAI.setPosition(sf::Vector2f(525.f * dpiFactor, 340.f * dpiFactor));
-	WAI.setTexture(texWAI, true);
-	WAI.setScale(sf::Vector2f(dpiFactor, dpiFactor));
-
-	// ^^
-
-	// Add font stuffs
-	if (!font.loadFromFile("fonts\\calibri.ttf")) MessageBox(window.getSystemHandle(), L"Couldn't load font \"Calibri\". You may need to reinstall ITC.", L"Error", 0);
-	
-	// Add copyright text
-	sf::Text copyright;
-	const wchar_t* copyrightString = L"© Nāṣir ʿAṭif\nv4.2";
-
-	// Set copyright font stuffs
-	copyright.setFont(font);
-	copyright.setCharacterSize((uint32_t)(18 * dpiFactor));
-	copyright.setString(copyrightString);
-	copyright.setFillColor(fontColor);
-	copyright.setPosition(sf::Vector2f(15.f * dpiFactor, 15.f * dpiFactor));
-
-	// Add documentation button text
-	sf::Text viewDoc;
-
-	// Set documentation button stuffs
-	viewDoc.setFont(font);
-	viewDoc.setCharacterSize((uint32_t)(18 * dpiFactor));
-	viewDoc.setString("View documentation");
-	viewDoc.setFillColor(fontColor2);
-	viewDoc.setPosition(sf::Vector2f(125.f * dpiFactor, 15.f * dpiFactor));
-
-	// Set update button stuffs
-	update.setFont(font);
-	update.setCharacterSize((uint32_t)(18 * dpiFactor));
-	update.setString("Update Available!");
-	update.setFillColor(fontColor3);
-	update.setPosition(sf::Vector2f(295.f * dpiFactor, 15.f * dpiFactor));
-
-	if (!updateBtnActivated) update.setFillColor(sf::Color(fontColor3.r, fontColor3.g, fontColor3.b, 0));
-
-	// Add tip text
 	sf::Text tip;
-	bool tipDismissed = false;
-	bool tipTimeout = false;
-	int tipTimer = 0;
-
 	// Set tip font stuffs
 	tip.setFont(font);
-	tip.setCharacterSize((uint32_t)(18 * dpiFactor));
-	tip.setString(L"Hover over a text to see it's translation in English");
+	tip.setCharacterSize((uint)(ITC_FONT_SIZE * dpiFactor));
+	tip.setString(ITC_STR_TOOLTIP);
 	tip.setFillColor(fontColor);
-	tip.setPosition(sf::Vector2f(15.f * dpiFactor, 410.f * dpiFactor));
+	tip.setOutlineColor(fontColor4);
+	tip.setOutlineThickness(ITC_OUTLINE_THICKNESS * dpiFactor);
+	tip.setPosition(sf::Vector2f(15.f * dpiFactor, 415.f * dpiFactor));
 
-	// Add copy notification text
 	sf::Text copyNotif;
-
-	// Set copy notification font stuffs
+	// Set copy notification font stuff
 	copyNotif.setFont(font);
-	copyNotif.setCharacterSize((uint32_t)(18 * dpiFactor));
-	copyNotif.setString("Copied!");
+	copyNotif.setCharacterSize((uint)(ITC_FONT_SIZE * dpiFactor));
+	copyNotif.setString(ITC_STR_COPIED);
 	copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 0));
+	copyNotif.setOutlineColor(sf::Color(fontColor4.r, fontColor4.g, fontColor4.b, 0));
+	copyNotif.setOutlineThickness(ITC_OUTLINE_THICKNESS * dpiFactor);
 	copyNotif.setPosition(sf::Vector2f(635.f * dpiFactor, 15.f * dpiFactor));
 
-	// Set initial clear color
-	sf::Color clearColor = sf::Color(0, 0, 0, 255);
+	AddButton(
+		"CopyrightText", 
+		Website, 
+		L"© Nasīr ʿAṭif\nv4.3", 
+		sf::Vector2f(16.0f, 16.0f), 
+		L"Go to the homepage of Islāmic Text Copier."
+	);
+	AddButton(
+		"DocsButton", 
+		Documentation, 
+		L"View documentation", 
+		sf::Vector2f(116.0f, 16.0f), 
+		L"View the documentation of Islāmic Text Copier."
+	);
 
-	// Attempt updating, and do it in another thread in case it's slow
-	std::thread updateThread(Update);
+	AddButton(
+		"UpdateButton", 
+		Website, 
+		L"Update Available!", 
+		sf::Vector2f(270.0f, 16.0f), 
+		L"Go to the homepage of Islāmic Text Copier to update."
+	);
+	SetButtonState("UpdateButton", false);
 
-	// Only used for one if statement
-	bool doNotExecAgain = false;
-	// Main loop
+	sf::Thread updateThread(&ITC::CheckForUpdates);
+	updateThread.launch();
+
+	sf::Event event;
 	while (window.isOpen())
 	{
-		// Rather lazy way of making tip effects
-		if (tipTimer < 320)
-		{
-			tipTimer++;
-		}
-		if (tipTimer >= 320)
-		{
-			tipTimeout = true;
-		}
-		if (tipTimeout == true && doNotExecAgain == false)
-		{
-			tipDismissed = true;
-			doNotExecAgain = true;
-		}
+		static bool windowShouldClose = false;
+		static bool mouseMoved = false;
+		static bool spacePressed = false;
+		static bool tabPressed = false;
 
-		// Hotkeys
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-		{
-			Clipboard(L"ﷻ");
-			JAL.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-		{
-			Clipboard(L"سبحانه و تعالى");
-			SWT.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-		{
-			Clipboard(L"عز و جل");
-			AZW.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
-		{
-			Clipboard(L"ﷺ");
-			SAW.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
-		{
-			Clipboard(L"رضي الله عنه");
-			RA1.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
-		{
-			Clipboard(L"رضي الله عنها");
-			RA2.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
-		{
-			Clipboard(L"رحمه الله");
-			RAH.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
-		{
-			Clipboard(L"حفظه الله");
-			HAF.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
-		{
-			Clipboard(L"عليه السلام");
-			AS.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
-		{
-			Clipboard(L"الحمد لله");
-			ALH.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Hyphen))
-		{
-			Clipboard(L"جزاك الله خيرا");
-			JZK.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Equal))
-		{
-			Clipboard(L"بارك الله فيك");
-			BRK.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::LBracket))
-		{
-			Clipboard(L"السلام عليكم");
-			ASL.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::RBracket))
-		{
-			Clipboard(L"إن شاء الله");
-			INS.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Semicolon))
-		{
-			Clipboard(L"رضي الله عنهما");
-			RA3.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Quote))
-		{
-			Clipboard(L"سبحان الله");
-			SUB.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
-		if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) && sf::Keyboard::isKeyPressed(sf::Keyboard::Slash))
-		{
-			Clipboard(L"و إياك");
-			SUB.setColor(sf::Color(255, 255, 255, 255));
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-		}
+		// Used to select a button using TAB
+		static int buttonCursor = -1;
 
-		// Poll events
-		sf::Event event;
+		static uint tipTimer = 520u;
+
+		// Scrolling:
+		float screenHeight = (ITC_HEIGHT * dpiFactor);
+
+		static float currentYPos = 0.0f;
+		currentYPos = (currentYPos + (scrollYPos - currentYPos) * 0.2f);
+
+		float scrollYOffset = (currentYPos > screenHeight / 2.0f) ?
+		std::min(currentYPos - (screenHeight / 2.0f), std::max(frameHeight, screenHeight) - screenHeight) :
+			0;
+		spacePressed = false;
+		tabPressed = false;
 		while (window.pollEvent(event))
 		{
-			// Set texts to their defaults when the user isn't hovering over them
-			copyright.setString(copyrightString);
-			if (tipTimeout == true) tipDismissed = true;
-
-			// Copyright button
-			if (copyright.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Go to the homepage of Islāmic Text Copier.");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-
-				// When pressed
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					ShellExecute(NULL, L"open", L"https://itc.nasiratif.net", NULL, NULL, SW_SHOWNORMAL);
-					ShowWindow(window.getSystemHandle(), SW_MINIMIZE);
-					copyright.setFillColor(fontColor);
-				}
-
-				if (copyright.getFillColor().a > 150)
-				{
-					copyright.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Min(150, copyright.getFillColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (copyright.getFillColor().a < 255)
-				{
-					copyright.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(copyright.getFillColor().a + 15, 255)));
-				}
-			}
-
-			// Documentation button
-			if (viewDoc.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"View the documentation of Islāmic Text Copier.");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-
-				// When pressed
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					ShellExecute(NULL, L"open", L"ITC_Documentation.pdf", NULL, NULL, SW_SHOWNORMAL);
-					ShowWindow(window.getSystemHandle(), SW_MINIMIZE);
-					viewDoc.setFillColor(fontColor2);
-				}
-
-				if (viewDoc.getFillColor().a > 150)
-				{
-					viewDoc.setFillColor(sf::Color(fontColor2.r, fontColor2.g, fontColor2.b, Min(150, viewDoc.getFillColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (viewDoc.getFillColor().a < 255)
-				{
-					viewDoc.setFillColor(sf::Color(fontColor2.r, fontColor2.g, fontColor2.b, Max(viewDoc.getFillColor().a + 15, 255)));
-				}
-			}
-
-			// Update button
-			if (update.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y) && updateBtnActivated)
-			{
-				tip.setString(L"Go to the Islāmic Text Copier homepage to download the latest update.");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-
-				// When pressed
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					ShellExecute(NULL, L"open", L"https://itc.nasiratif.net", NULL, NULL, SW_SHOWNORMAL);
-					update.setFillColor(fontColor3);
-					window.close();
-					break;
-				}
-
-				if (update.getFillColor().a > 150)
-				{
-					update.setFillColor(sf::Color(fontColor3.r, fontColor3.g, fontColor3.b, Min(150, update.getFillColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (update.getFillColor().a < 255 && updateBtnActivated)
-				{
-					update.setFillColor(sf::Color(fontColor3.r, fontColor3.g, fontColor3.b, Max(update.getFillColor().a + 15, 255)));
-				}
-			}
-
-			// JAL button
-			if (JAL.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Jalla Jalāluhu (Exalted is His Majesty) (ALT + 1)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"ﷻ");
-					JAL.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (JAL.getColor().a > 150)
-				{
-					JAL.setColor(sf::Color(255, 255, 255, Min(150, JAL.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (JAL.getColor().a < 255)
-				{
-					JAL.setColor(sf::Color(255, 255, 255, Max(JAL.getColor().a + 15, 255)));
-				}
-			}
-
-			// SWT button
-			if (SWT.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Subḥānahu wa Taʾālá (Glorious and Exalted is He) (ALT + 2)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"سبحانه و تعالى");
-					SWT.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (SWT.getColor().a > 150)
-				{
-					SWT.setColor(sf::Color(255, 255, 255, Min(150, SWT.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (SWT.getColor().a < 255)
-				{
-					SWT.setColor(sf::Color(255, 255, 255, Max(SWT.getColor().a + 15, 255)));
-				}
-			}
-
-			// AZW button
-			if (AZW.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"ʿAzza wa Jal (The Mighty and Majestic) (ALT + 3)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"عز و جل");
-					AZW.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (AZW.getColor().a > 150)
-				{
-					AZW.setColor(sf::Color(255, 255, 255, Min(150, AZW.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (AZW.getColor().a < 255)
-				{
-					AZW.setColor(sf::Color(255, 255, 255, Max(AZW.getColor().a + 15, 255)));
-				}
-			}
-
-			// SAW button
-			if (SAW.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"ʿSallá Allāhu ʿAlayhī wa as-Salam (May Allāh's praise & salutations be upon him) (ALT + 4)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"ﷺ");
-					SAW.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (SAW.getColor().a > 150)
-				{
-					SAW.setColor(sf::Color(255, 255, 255, Min(150, SAW.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (SAW.getColor().a < 255)
-				{
-					SAW.setColor(sf::Color(255, 255, 255, Max(SAW.getColor().a + 15, 255)));
-				}
-			}
-
-			// RA1 button
-			if (RA1.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Raḍī Allāhu ʿAnhu (May Allāh be pleased with him) (ALT + 5)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"رضي الله عنه");
-					RA1.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (RA1.getColor().a > 150)
-				{
-					RA1.setColor(sf::Color(255, 255, 255, Min(150, RA1.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (RA1.getColor().a < 255)
-				{
-					RA1.setColor(sf::Color(255, 255, 255, Max(RA1.getColor().a + 15, 255)));
-				}
-			}
-
-			// RA2 button
-			if (RA2.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Raḍī Allāhu ʿAnhā (May Allāh be pleased with her) (ALT + 6)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"رضي الله عنها");
-					RA2.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (RA2.getColor().a > 150)
-				{
-					RA2.setColor(sf::Color(255, 255, 255, Min(150, RA2.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (RA2.getColor().a < 255)
-				{
-					RA2.setColor(sf::Color(255, 255, 255, Max(RA2.getColor().a + 15, 255)));
-				}
-			}
-
-			// RAH button
-			if (RAH.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Raḥimahullāh (May Allah have mercy on him) (ALT + 7)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"رحمه الله");
-					RAH.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (RAH.getColor().a > 150)
-				{
-					RAH.setColor(sf::Color(255, 255, 255, Min(150, RAH.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (RAH.getColor().a < 255)
-				{
-					RAH.setColor(sf::Color(255, 255, 255, Max(RAH.getColor().a + 15, 255)));
-				}
-			}
-
-			// HAF button
-			if (HAF.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Ḥafiẓahullāh (May Allah preserve him) (ALT + 8)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"حفظه الله");
-					HAF.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (HAF.getColor().a > 150)
-				{
-					HAF.setColor(sf::Color(255, 255, 255, Min(150, HAF.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (HAF.getColor().a < 255)
-				{
-					HAF.setColor(sf::Color(255, 255, 255, Max(HAF.getColor().a + 15, 255)));
-				}
-			}
-
-			// AS button
-			if (AS.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"ʿAlayhī as-Salām (Peace be upon him) (ALT + 9)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"عليه السلام");
-					AS.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (AS.getColor().a > 150)
-				{
-					AS.setColor(sf::Color(255, 255, 255, Min(150, AS.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (AS.getColor().a < 255)
-				{
-					AS.setColor(sf::Color(255, 255, 255, Max(AS.getColor().a + 15, 255)));
-				}
-			}
-
-			// ALH button
-			if (ALH.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Alḥamdulillāh (All praises and thanks are due to Allāh) (ALT + 0)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"الحمد لله");
-					ALH.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (ALH.getColor().a > 150)
-				{
-					ALH.setColor(sf::Color(255, 255, 255, Min(150, ALH.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (ALH.getColor().a < 255)
-				{
-					ALH.setColor(sf::Color(255, 255, 255, Max(ALH.getColor().a + 15, 255)));
-				}
-			}
-
-			// JZK button
-			if (JZK.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Jazāk Allāhu Khairan (May Allāh give you good) (ALT + -)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"جزاك الله خيرا");
-					JZK.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (JZK.getColor().a > 150)
-				{
-					JZK.setColor(sf::Color(255, 255, 255, Min(150, JZK.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (JZK.getColor().a < 255)
-				{
-					JZK.setColor(sf::Color(255, 255, 255, Max(JZK.getColor().a + 15, 255)));
-				}
-			}
-
-			// BRK button
-			if (BRK.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Bārik Allāhu Fīk (May Allāh bless you) (ALT + =)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"بارك الله فيك");
-					BRK.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (BRK.getColor().a > 150)
-				{
-					BRK.setColor(sf::Color(255, 255, 255, Min(150, BRK.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (BRK.getColor().a < 255)
-				{
-					BRK.setColor(sf::Color(255, 255, 255, Max(BRK.getColor().a + 15, 255)));
-				}
-			}
-
-			// ASL button
-			if (ASL.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"As Salāmu ‘Alaikum (Peace be upon you) (ALT + [)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"السلام عليكم");
-					ASL.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (ASL.getColor().a > 150)
-				{
-					ASL.setColor(sf::Color(255, 255, 255, Min(150, ASL.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (ASL.getColor().a < 255)
-				{
-					ASL.setColor(sf::Color(255, 255, 255, Max(ASL.getColor().a + 15, 255)));
-				}
-			}
-
-			// INS button
-			if (INS.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"ʾIn shāʾ Allāh (If Allāh wills) (ALT + ])");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"إن شاء الله");
-					INS.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (INS.getColor().a > 150)
-				{
-					INS.setColor(sf::Color(255, 255, 255, Min(150, INS.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (INS.getColor().a < 255)
-				{
-					INS.setColor(sf::Color(255, 255, 255, Max(INS.getColor().a + 15, 255)));
-				}
-			}
-
-			// RA3 button
-			if (RA3.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Raḍī Allāhu ʿAnhumā (May Allāh be pleased with them) (ALT + ;)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"رضي الله عنهما");
-					RA3.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (RA3.getColor().a > 150)
-				{
-					RA3.setColor(sf::Color(255, 255, 255, Min(150, RA3.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (RA3.getColor().a < 255)
-				{
-					RA3.setColor(sf::Color(255, 255, 255, Max(RA3.getColor().a + 15, 255)));
-				}
-			}
-
-			// SUB button
-			if (SUB.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Subḥānallāh (Glory be to Allāh) (ALT + ')");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"سبحان الله");
-					SUB.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (SUB.getColor().a > 150)
-				{
-					SUB.setColor(sf::Color(255, 255, 255, Min(150, SUB.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (SUB.getColor().a < 255)
-				{
-					SUB.setColor(sf::Color(255, 255, 255, Max(SUB.getColor().a + 15, 255)));
-				}
-			}
-
-			// WAI button
-			if (WAI.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y))
-			{
-				tip.setString(L"Wa Iyyākum (And you) (ALT + /)");
-				tipTimeout = true;
-				tipDismissed = false;
-				tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 35, 255)));
-
-				// Actually copy it
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					Clipboard(L"وإياكم");
-					WAI.setColor(sf::Color(255, 255, 255, 255));
-					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
-				}
-
-				if (WAI.getColor().a > 150)
-				{
-					WAI.setColor(sf::Color(255, 255, 255, Min(150, WAI.getColor().a - 15)));
-				}
-			}
-			else
-			{
-				if (WAI.getColor().a < 255)
-				{
-					WAI.setColor(sf::Color(255, 255, 255, Max(WAI.getColor().a + 15, 255)));
-				}
-			}
-
 			// Close window when the user requests to do so
 			if (event.type == sf::Event::Closed)
+			{
 				window.close();
-			// Or, if the user simply presses Escape
-			if (event.type == sf::Event::KeyPressed)
-				if (event.key.code == sf::Keyboard::Escape) window.close();
+				windowShouldClose = true;
+			}
+			else if (event.type == sf::Event::MouseMoved)
+			{
+				mouseMoved = true;
+			}
+			else if (event.type == sf::Event::MouseWheelMoved)
+			{
+				scrollYPos = event.mouseWheel.delta >= 0 ?
+					scrollYPos = std::clamp(scrollYPos - ITC_HEIGHT * dpiFactor, 0.0f, frameHeight)
+					:
+					scrollYPos = std::clamp(scrollYPos + ITC_HEIGHT * dpiFactor, 0.0f, frameHeight);
+			}
+			else if (event.type == sf::Event::KeyPressed)
+			{
+				if (event.key.code == sf::Keyboard::Up)
+				{
+					scrollYPos = std::clamp(scrollYPos - ITC_HEIGHT * dpiFactor, 0.0f, frameHeight);
+				}
+				else if (event.key.code == sf::Keyboard::Down)
+				{
+					scrollYPos = std::clamp(scrollYPos + ITC_HEIGHT * dpiFactor, 0.0f, frameHeight);
+				}
+				else if (event.key.code == sf::Keyboard::Escape)
+				{
+					window.close();
+					windowShouldClose = true;
+					break;
+				}
+				else if (event.key.code == sf::Keyboard::Tab)
+				{
+					tabPressed = true;
+					buttonCursor++;
+					if (buttonCursor >= (int)(copyButtons.size() + buttons.size()))
+						buttonCursor = 0;
+
+					if (buttonCursor < (int)buttons.size() && !buttons[buttonCursor < (int)buttons.size() ? buttonCursor : 0u].enabled && buttonCursor + 1 < (int)(copyButtons.size() + buttons.size()))
+						buttonCursor++;
+				}
+				else if (event.key.code == sf::Keyboard::Space || event.key.code == sf::Keyboard::Enter)
+				{
+					spacePressed = true;
+				}
+				else
+				{
+					mouseMoved = false;
+					spacePressed = false;
+					tabPressed = false;
+				}
+			}
+			else
+			{
+				mouseMoved = false;
+			}
+		}
+		if (windowShouldClose)
+			break;
+
+		// Handle buttons:
+		for (size_t i = 0; i < buttons.size(); ++i)
+		{
+			Button& button = buttons[i];
+
+			if (button.enabled)
+			{
+				if (button.button.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y) && mouseMoved)
+				{
+					buttonCursor = i;
+					mouseMoved = false;
+				}
+				else if (mouseMoved)
+				{
+					buttonCursor = -1;
+				}
+
+				if (buttonCursor == i)
+				{
+					tip.setString(button.tooltip);
+					tipTimer = 150;
+
+					// Actually copy it
+					if (event.type == sf::Event::MouseButtonPressed || spacePressed)
+					{
+						button.action(window);
+						button.button.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, fontColor.a));
+					}
+
+					if (button.button.getFillColor().a > 150)
+					{
+						button.button.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, VALUE_MIN(150, button.button.getFillColor().a - 15)));
+					}
+				}
+				else if (button.button.getFillColor().a < 255)
+				{
+					button.button.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, VALUE_MAX(button.button.getFillColor().a + 15, 255)));
+				}
+			}
+		}
+		for (size_t i = 0; i < copyButtons.size(); ++i)
+		{
+			size_t actualIndex = buttons.size() + i;
+			ImageButton& button = copyButtons[i];
+
+			button.sprite.setPosition(button.sprite.getPosition().x, button.originalY - scrollYOffset);
+			if (button.sprite.getGlobalBounds().contains((float)sf::Mouse::getPosition(window).x, (float)sf::Mouse::getPosition(window).y) && mouseMoved)
+			{
+				buttonCursor = actualIndex;
+				mouseMoved = false;
+			}
+			else if (mouseMoved)
+			{
+				buttonCursor = -1;	
+			}
+
+			if (buttonCursor == actualIndex)
+			{
+				if (tabPressed)
+					scrollYPos = (button.originalY - button.sprite.getOrigin().y) + button.sprite.getGlobalBounds().height;
+
+				tip.setString(button.tooltip);
+				tip.setCharacterSize((uint)(ITC_FONT_SIZE * dpiFactor) - button.fontShrink);
+				tipTimer = 150;
+
+				// Actually copy it
+				if (event.type == sf::Event::MouseButtonPressed || spacePressed)
+				{
+					Clipboard(button.text.c_str());
+					button.sprite.setColor(sf::Color(255, 255, 255, 255));
+					copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
+					copyNotif.setOutlineColor(sf::Color(fontColor4.r, fontColor4.g, fontColor4.b, 255));
+				}
+
+				if (button.sprite.getColor().a > 150)
+				{
+					button.sprite.setColor(sf::Color(255, 255, 255, VALUE_MIN(150, button.sprite.getColor().a - 15)));
+				}
+			}
+			else if (button.sprite.getColor().a < 255)
+			{
+				button.sprite.setColor(sf::Color(255, 255, 255, VALUE_MAX(button.sprite.getColor().a + 15, 255)));
+			}
+
+			// Handling hotkeys:
+			if (sf::Keyboard::isKeyPressed(button.hotkey[0]) && sf::Keyboard::isKeyPressed(button.hotkey[1]))
+			{
+				Clipboard(button.text.c_str());
+				button.sprite.setColor(sf::Color(255, 255, 255, 255));
+				copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, 255));
+				copyNotif.setOutlineColor(sf::Color(fontColor4.r, fontColor4.g, fontColor4.b, 255));
+			}
 		}
 
+		// EFFECTS:
+		// -----
 		// Fade-in/out for the tip
-		if (tipDismissed == true)
+		if (!tipTimer)
 		{
-			tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Min(0, tip.getFillColor().a - 2)));
+			tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, VALUE_MIN(0, tip.getFillColor().a - 2)));
+			tip.setOutlineColor(sf::Color(fontColor4.r, fontColor4.g, fontColor4.b, VALUE_MIN(0, tip.getOutlineColor().a - 2)));
 		}
-		else if (tipDismissed == false)
+		else
 		{
-			tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Max(tip.getFillColor().a + 2, 255)));
+			tip.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, VALUE_MAX(tip.getFillColor().a + 45, 255)));
+			tip.setOutlineColor(sf::Color(fontColor4.r, fontColor4.g, fontColor4.b, VALUE_MAX(tip.getOutlineColor().a + 45, 255)));
+			tipTimer--;
 		}
 
 		// Fade out for copy notif text
 		if (copyNotif.getFillColor().a > 0)
 		{
-			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, Min(0, copyNotif.getFillColor().a - 3)));
+			copyNotif.setFillColor(sf::Color(fontColor.r, fontColor.g, fontColor.b, VALUE_MIN(0, copyNotif.getFillColor().a - 3)));
 		}
-		
-		// Add fade in to the clear color, I suppose
+		if (copyNotif.getOutlineColor().a > 0)
+		{
+			copyNotif.setOutlineColor(sf::Color(fontColor4.r, fontColor4.g, fontColor4.b, VALUE_MIN(0, copyNotif.getOutlineColor().a - 3)));
+		}
+		// -----
+
+		static sf::Color clearColor = sf::Color(0, 0, 0, 255);
+		// Add fade in to the clear color:
 		if (clearColor.r < 10)
 		{
-			clearColor = sf::Color(Max(clearColor.r + 4, 10), clearColor.g, clearColor.b);
+			clearColor = sf::Color(VALUE_MAX(clearColor.r + 4, 10), clearColor.g, clearColor.b);
 		}
 		if (clearColor.g < 34)
 		{
-			clearColor = sf::Color(clearColor.r, Max(clearColor.g + 4, 34), clearColor.b);
+			clearColor = sf::Color(clearColor.r, VALUE_MAX(clearColor.g + 4, 34), clearColor.b);
 		}
 		if (clearColor.b < 52)
 		{
-			clearColor = sf::Color(clearColor.r, clearColor.g, Max(clearColor.b + 4, 52));
+			clearColor = sf::Color(clearColor.r, clearColor.g, VALUE_MAX(clearColor.b + 4, 52));
 		}
 		window.clear(clearColor);
 
-		// Render objects
-		window.draw(JAL);
-		window.draw(SWT);
-		window.draw(AZW);
-		window.draw(SAW);
-		window.draw(RA1);
-		window.draw(RA2);
-		window.draw(RAH);
-		window.draw(HAF);
-		window.draw(AS);
-		window.draw(ALH);
-		window.draw(JZK);
-		window.draw(BRK);
-		window.draw(ASL);
-		window.draw(INS);
-		window.draw(RA3);
-		window.draw(SUB);
-		window.draw(WAI);
-		window.draw(viewDoc);
-		window.draw(update);
-		window.draw(copyright);
+		// Draw all texts
+		for (ImageButton& button : copyButtons)
+		{
+			window.draw(button.sprite);
+		}
+		for (Button& button : buttons)
+		{
+			if (button.enabled)
+				window.draw(button.button);
+		}
+
 		window.draw(tip);
 		window.draw(copyNotif);
 
-		// Present the entire frame
 		window.display();
-		
 	}
 
-	// Obligatory clean upping
-	updateThread.detach();
-	
 	return 0;
 }
 
-// Functions
 
-// Copies text to clipboard
+/*
+
+---------- BACKEND ----------
+
+*/
+
 inline void Clipboard(const wchar_t* string)
 {
-	const wchar_t* output = string;
-	const size_t len = (wcslen(output) + 1) * sizeof(wchar_t);
+	const size_t strSize = (wcslen(string) + 1) * sizeof(wchar_t);
 
-	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
-	memcpy(GlobalLock(hMem), output, len);
+	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, strSize);
+	memcpy(GlobalLock(hMem), string, strSize);
 	GlobalUnlock(hMem);
 
-	OpenClipboard(0);
+	OpenClipboard(NULL);
 	EmptyClipboard();
 	SetClipboardData(CF_UNICODETEXT, hMem);
 	CloseClipboard();
 }
 
-// Function to check for updates
-void Update()
+std::wstring ToWStr(std::string str)
+{
+	std::wostringstream wstm;
+	const std::ctype<wchar_t>& ctfacet = std::use_facet<std::ctype<wchar_t>>(wstm.getloc());
+	for (size_t i = 0u; i < str.size(); i++)
+		wstm << ctfacet.widen(str[i]);
+	return wstm.str();
+}
+
+
+void ITC::CheckForUpdates()
 {
 	// Download latest version file from website
 	// If OK, actually start checking if there's an update
-	if (SUCCEEDED(URLDownloadToFile(NULL, L"https://itc.nasiratif.net/version.txt", L"version.txt", BINDF_GETNEWESTVERSION, NULL)))
+	if (SUCCEEDED(URLDownloadToFile(NULL, ITC_STR_VERSIONURL, ITC_VERSION_FILENAME, BINDF_GETNEWESTVERSION, NULL)))
 	{
 #if defined(_DEBUG)
 		OutputDebugStringA("URL download succeeded!");
 #endif
-		
-		// Do some stuff to get the latest version from the website
-		file = fopen("version.txt", "r");
-		const unsigned MAX_LENGTH = 256;
-		char buffer[MAX_LENGTH];
-		const char* sLatestVersion = fgets(buffer, MAX_LENGTH, file);
-		uint32_t latestVersion = atoi(sLatestVersion);
 
+		// Do some stuff to get the latest version from the website:
+		std::ifstream file(ITC_VERSION_FILENAME, std::ios::binary | std::ios::beg);
+		size_t size = (size_t)std::filesystem::file_size(ITC_VERSION_FILENAME);
+
+		if (!file.is_open())
+			return;
+		char version[5] = { 0 };
+		file.read(version, VALUE_MAX(size, sizeof(version) - 1));
+
+		if (!file.good())
+		{
+			file.close();
+			return;
+		}
+
+		file.close();
+
+		ushort latestVersion = (ushort)atoi(version);
 #if defined(_DEBUG)
 		OutputDebugStringA("\nLatest version polled from website: ");
-		OutputDebugStringA(sLatestVersion);
+		OutputDebugStringA(version);
 		OutputDebugStringA("\n");
 #endif
 
 		// If this version is outdated, do some stuff
 		if (latestVersion > ITC_THIS_VERSION)
 		{
-			updateBtnActivated = true;
-			if (updateBtnActivated) update.setFillColor(sf::Color(fontColor3.r, fontColor3.g, fontColor3.b, 255));
+			SetButtonState("UpdateButton", true);
 #if defined(_DEBUG)
 			OutputDebugStringA("Update available\n");
 #endif
 		}
-
-		fclose(file);
 	}
 #if defined(_DEBUG)
 	else
@@ -1143,4 +446,105 @@ void Update()
 		OutputDebugStringA("Couldn't check for updates..\n");
 	}
 #endif
+}
+
+
+void ITC::ImportImage(std::string fileName, std::string name)
+{
+	sf::Texture& tex = images[name];
+	if (!tex.loadFromFile(fileName))
+		MessageBox(window.getSystemHandle(), ITC_STR_ERR_MSG(name).c_str(), L"Error", MB_ICONINFORMATION);
+	tex.setSmooth(true);
+}
+
+void ITC::ImportImage(void* data, size_t size, std::string name)
+{
+	sf::Texture& tex = images[name];
+	if (!tex.loadFromMemory(data, size))
+		MessageBox(window.getSystemHandle(), ITC_STR_ERR_MSG(name).c_str(), L"Error", MB_ICONINFORMATION);
+	tex.setSmooth(true);
+}
+
+
+void ITC::AddCopyableButton(std::wstring text, std::string image, std::wstring tooltip, sf::Keyboard::Key key1, sf::Keyboard::Key key2, uint fontShrink)
+{
+	sf::Vector2f defaultPos = sf::Vector2f(60.0f, 130.0f);
+	sf::Vector2f pos = defaultPos;
+	bool buttonsExist = !copyButtons.empty();
+
+	static float lineHeight = 0u;
+
+	ImageButton copyButton = ImageButton(text, image, tooltip, key1, key2, sf::Vector2f(pos.x * dpiFactor, pos.y * dpiFactor), fontShrink);
+
+	float rectHeight = copyButton.sprite.getGlobalBounds().height;
+	if (rectHeight > lineHeight)
+		lineHeight = rectHeight;
+
+	if (buttonsExist)
+	{
+		sf::Sprite& lastButton = copyButtons[copyButtons.size() - 1].sprite;
+		pos = sf::Vector2f(
+			lastButton.getPosition().x + lastButton.getGlobalBounds().width,
+			lastButton.getPosition().y
+		);
+
+		copyButton.sprite.setPosition(sf::Vector2f(pos.x + ITC_X_BUTTON_PADDING * dpiFactor, pos.y));
+		if (copyButton.sprite.getPosition().x + copyButton.sprite.getGlobalBounds().width > (float)(ITC_WIDTH * dpiFactor) - ITC_X_BUTTON_PADDING)
+		{
+			copyButton.sprite.setPosition(defaultPos.x * dpiFactor, copyButton.sprite.getPosition().y + ((float)rectHeight + (ITC_Y_BUTTON_PADDING * dpiFactor)));
+			rectHeight = 0.0f;
+		}
+	}
+	float newFrameHeight = ((copyButton.sprite.getPosition().y - copyButton.sprite.getOrigin().y * dpiFactor) + copyButton.sprite.getGlobalBounds().height) + (ITC_Y_BUTTON_PADDING + 50) * dpiFactor;
+
+	if (newFrameHeight > frameHeight)
+		frameHeight = newFrameHeight;
+
+	copyButton.originalY = copyButton.sprite.getPosition().y;
+	copyButtons.emplace_back(copyButton);
+}
+
+void ITC::AddButton(std::string name, Action action, std::wstring text, sf::Vector2f pos, std::wstring tooltip)
+{
+	Button& button = buttons.emplace_back(Button(name, action, text, tooltip, sf::Vector2f(pos.x * dpiFactor, pos.y * dpiFactor)));
+}
+
+void ITC::SetButtonState(std::string name, bool state)
+{
+	for (Button& button : buttons)
+	{
+		if (button.name != name)
+			continue;
+		button.enabled = state;
+	}
+}
+
+size_t ITC::GetButtonIndex(std::string name)
+{
+	for (size_t i = 0; i < buttons.size(); ++i)
+	{
+		if (buttons[i].name == name)
+			return i;
+	}
+
+	return size_t(-1);
+}
+
+bool ITC::IsButtonEnabled(std::string name)
+{
+	for (size_t i = 0; i < buttons.size(); ++i)
+	{
+		if (buttons[i].name == name)
+			return buttons[i].enabled;
+	}
+
+	return false;
+}
+
+
+// Entry point
+int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
+{	
+	ITC itc;
+	return itc.Main();
 }

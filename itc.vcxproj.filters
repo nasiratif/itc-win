@@ -20,10 +20,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="range.h">
+    <ClInclude Include="Main.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Texts.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Typedefs.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
