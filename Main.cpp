@@ -13,12 +13,6 @@
 #pragma comment(lib, "SFML\\sfml-system.lib")
 #endif
 
-// Global declarations
-//FILE *file;
-
-//sf::Text update;
-bool updateBtnActivated = false;
-
 // BUTTON ACTIONS:
 // -----
 void Website(sf::Window& window)
