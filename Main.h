@@ -6,7 +6,6 @@ Arabic font used is Jali Arabic
 
 #include "Texts.h"
 
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -22,7 +21,6 @@ typedef struct IUnknown IUnknown; // XP toolset seems to not compile without thi
 
 #include <Windows.h>
 #include <UrlMon.h>
-#include <Windows.h>
 
 // Enable modern visual styles
 #if defined _WIN64
@@ -30,10 +28,6 @@ typedef struct IUnknown IUnknown; // XP toolset seems to not compile without thi
 #else
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
-
-// STRUCTS
-// -----
-// -----
 
 // FUNCTIONS
 // -----
@@ -58,16 +52,6 @@ std::wstring ToWStr(std::string str);
 #define ITC_FONT_FILE "fonts\\calibri.ttf"
 #define ITC_FONT_SIZE 16u
 #define ITC_OUTLINE_THICKNESS 7.5f
-// STRINGS:
-// -----
-// Error message printed whenever a resource failed to load
-#define ITC_STR_ERR_MSG(name) std::wstring(L"Couldn't load resource \"" + ToWStr(name) + L"\". You may need to reinstall ITC.")
-#define ITC_STR_WEBSITE L"https://itc.nasiratif.net"
-#define ITC_STR_VERSIONURL L"https://itc.nasiratif.net/version.txt"
-#define ITC_STR_TOOLTIP L"Hover over a text to see it's translation in English. Use arrow keys/mouse wheel to scroll."
-#define ITC_STR_COPIED L"Copied!"
-// -----
-
 // Button X padding
 #define ITC_X_BUTTON_PADDING 20u
 // Button Y padding
@@ -76,6 +60,19 @@ std::wstring ToWStr(std::string str);
 #define VALUE_MAX(initial, max) (initial) > (max) ? (max) : (initial)
 // Sets a minimum value for an integer
 #define VALUE_MIN(min, initial) (initial) < (min) ? (min) : (initial)
+// -----
+
+// STRINGS:
+// -----
+// Error message printed whenever a resource failed to load
+#define ITC_STR_ERR_MSG(name) std::wstring(L"Couldn't load resource \"" + ToWStr(name) + L"\". You may need to reinstall ITC.")
+#define ITC_STR_WEBSITEURL L"https://itc.nasiratif.net"
+#define ITC_STR_VERSIONURL L"https://itc.nasiratif.net/version.txt"
+#define ITC_STR_COPYRIGHT L"© Nasīr ʿAṭif\nv4.3"
+#define ITC_STR_DOCUMENTATION L"View documentation"
+#define ITC_STR_UPDATE L"Update Available!"
+#define ITC_STR_TOOLTIP L"Hover over a text to see it's translation in English. Use arrow keys/mouse wheel to scroll."
+#define ITC_STR_COPIED L"Copied!"
 // -----
 
 // APPLICATION CLASS

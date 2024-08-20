@@ -17,7 +17,7 @@
 // -----
 void Website(sf::Window& window)
 {
-	ShellExecute(NULL, L"open", ITC_STR_WEBSITE, NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, L"open", ITC_STR_WEBSITEURL, NULL, NULL, SW_SHOWNORMAL);
 	ShowWindow(window.getSystemHandle(), SW_MINIMIZE);
 }
 void Documentation(sf::Window& window)
@@ -92,14 +92,14 @@ int ITC::Main()
 	AddButton(
 		"CopyrightText", 
 		Website, 
-		L"© Nasīr ʿAṭif\nv4.3", 
+		ITC_STR_COPYRIGHT, 
 		sf::Vector2f(16.0f, 16.0f), 
 		L"Go to the homepage of Islāmic Text Copier."
 	);
 	AddButton(
 		"DocsButton", 
 		Documentation, 
-		L"View documentation", 
+		ITC_STR_DOCUMENTATION, 
 		sf::Vector2f(116.0f, 16.0f), 
 		L"View the documentation of Islāmic Text Copier."
 	);
@@ -107,7 +107,7 @@ int ITC::Main()
 	AddButton(
 		"UpdateButton", 
 		Website, 
-		L"Update Available!", 
+		ITC_STR_UPDATE, 
 		sf::Vector2f(270.0f, 16.0f), 
 		L"Go to the homepage of Islāmic Text Copier to update."
 	);
