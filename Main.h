@@ -1,9 +1,12 @@
-﻿/* Islāmic Text Copier Revision 4
-Arabic font used is Jali Arabic
-© نَصِير عاطف (Nasīr ʿAṭif) */
+﻿/* 
+
+---------- Islāmic Text Copier Revision 4 ----------
+---------- Arabic font used is Jali Arabic ----------
+---------- © نَصِير عاطف (Nasīr ʿAṭif) ----------
+
+*/
 
 #pragma once
-
 #include "Texts.h"
 
 #include <sstream>
@@ -11,8 +14,10 @@ Arabic font used is Jali Arabic
 #include <thread>
 #include <fstream>
 #include <filesystem>
-
-typedef struct IUnknown IUnknown; // XP toolset seems to not compile without this..?
+#include <unordered_map>
+#include <map>
+#include <vector>
+#include <mutex>
 
 #include <SFML\Window.hpp>
 #include <SFML\Graphics.hpp>
@@ -20,7 +25,7 @@ typedef struct IUnknown IUnknown; // XP toolset seems to not compile without thi
 #include <SFML\Window\Mouse.hpp>
 
 #include <Windows.h>
-#include <UrlMon.h>
+#include <WinInet.h>
 
 // Enable modern visual styles
 #if defined _WIN64
@@ -40,7 +45,7 @@ std::wstring ToWStr(std::string str);
 // DEFINES
 // -----
 // Set current ITC version here:
-#define ITC_THIS_VERSION 27u
+#define ITC_THIS_VERSION 28u
 #define ITC_VERSION_FILENAME L"version.txt"
 #define ITC_APP_NAME L"Islāmic Text Copier"
 // Window size:
@@ -68,7 +73,8 @@ std::wstring ToWStr(std::string str);
 #define ITC_STR_ERR_MSG(name) std::wstring(L"Couldn't load resource \"" + ToWStr(name) + L"\". You may need to reinstall ITC.")
 #define ITC_STR_WEBSITEURL L"https://itc.nasiratif.net"
 #define ITC_STR_VERSIONURL L"https://itc.nasiratif.net/version.txt"
-#define ITC_STR_COPYRIGHT L"© Nasīr ʿAṭif\nv4.3"
+// make sure to update resource files as well
+#define ITC_STR_COPYRIGHT L"© Nasīr ʿAṭif\nv4.4"
 #define ITC_STR_DOCUMENTATION L"View documentation"
 #define ITC_STR_UPDATE L"Update Available!"
 #define ITC_STR_TOOLTIP L"Hover over a text to see it's translation in English. Use arrow keys/mouse wheel to scroll."
@@ -162,6 +168,9 @@ private:
 	static float dpiFactor;
 	static float frameHeight;
 	static float scrollYPos;
+	// This is here because we check for updating in another thread
+	// Seems to work fine without any mutexing, but idk if SFML is officially thread-safe so just in case
+	static std::mutex windowMutex;
 
 	// Window icon
 	static sf::Image icon;
@@ -191,6 +200,8 @@ sf::RenderWindow ITC::window;
 float ITC::dpiFactor = 1.0f;
 float ITC::frameHeight = 0.0f;
 float ITC::scrollYPos = 0.0f;
+
+std::mutex ITC::windowMutex;
 
 sf::Image ITC::icon;
 

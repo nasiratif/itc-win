@@ -1,6 +1,6 @@
 ﻿#include "Main.h"
 
-#pragma comment (lib, "urlmon.lib")
+#pragma comment (lib, "wininet.lib")
 #pragma comment(lib, "opengl32.lib")
 
 #if defined(_DEBUG)
@@ -140,6 +140,8 @@ int ITC::Main()
 			0;
 		spacePressed = false;
 		tabPressed = false;
+
+		windowMutex.lock();
 		while (window.pollEvent(event))
 		{
 			// Close window when the user requests to do so
@@ -202,7 +204,10 @@ int ITC::Main()
 			}
 		}
 		if (windowShouldClose)
+		{
+			windowMutex.unlock();
 			break;
+		}
 
 		// Handle buttons:
 		for (size_t i = 0; i < buttons.size(); ++i)
@@ -355,6 +360,8 @@ int ITC::Main()
 		window.draw(copyNotif);
 
 		window.display();
+
+		windowMutex.unlock();
 	}
 
 	return 0;
@@ -395,51 +402,49 @@ void ITC::CheckForUpdates()
 {
 	// Download latest version file from website
 	// If OK, actually start checking if there's an update
-	if (SUCCEEDED(URLDownloadToFile(NULL, ITC_STR_VERSIONURL, ITC_VERSION_FILENAME, BINDF_GETNEWESTVERSION, NULL)))
+	HINTERNET internet = InternetOpen(TEXT("ITCweb"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
+	if (!internet)
+		return;
+
+	HINTERNET versionURL = InternetOpenUrl(internet, ITC_STR_VERSIONURL, NULL, NULL, NULL, NULL);
+	if (!versionURL)
 	{
-#if defined(_DEBUG)
-		OutputDebugStringA("URL download succeeded!");
-#endif
-
-		// Do some stuff to get the latest version from the website:
-		std::ifstream file(ITC_VERSION_FILENAME, std::ios::binary | std::ios::beg);
-		size_t size = (size_t)std::filesystem::file_size(ITC_VERSION_FILENAME);
-
-		if (!file.is_open())
-			return;
-		char version[5] = { 0 };
-		file.read(version, VALUE_MAX(size, sizeof(version) - 1));
-
-		if (!file.good())
-		{
-			file.close();
-			return;
-		}
-
-		file.close();
-
-		ushort latestVersion = (ushort)atoi(version);
-#if defined(_DEBUG)
-		OutputDebugStringA("\nLatest version polled from website: ");
-		OutputDebugStringA(version);
-		OutputDebugStringA("\n");
-#endif
-
-		// If this version is outdated, do some stuff
-		if (latestVersion > ITC_THIS_VERSION)
-		{
-			SetButtonState("UpdateButton", true);
-#if defined(_DEBUG)
-			OutputDebugStringA("Update available\n");
-#endif
-		}
+		InternetCloseHandle(internet);
+		return;
 	}
+
+	char version[64] = { 0 };
+	DWORD numRead = 0;
+	InternetReadFile(versionURL, version, sizeof(version) - 1 /* need null terminator */, &numRead);
+
+	InternetCloseHandle(versionURL);
+	InternetCloseHandle(internet);
+
+	if (!numRead)
+		return;
+
 #if defined(_DEBUG)
-	else
+	OutputDebugString(TEXT("URL download succeeded!"));
+#endif
+
+	ushort latestVersion = (ushort)atoi(version);
+
+#if defined(_DEBUG)
+	OutputDebugString(TEXT("\nLatest version polled from website: "));
+	OutputDebugStringA(version); // mix-and-matching unicode/ANSI is good, right?
+	OutputDebugString(TEXT("\n"));
+#endif
+
+	// If this version is outdated, do some stuff
+	if (latestVersion > ITC_THIS_VERSION)
 	{
-		OutputDebugStringA("Couldn't check for updates..\n");
-	}
+		windowMutex.lock();
+		SetButtonState("UpdateButton", true);
+		windowMutex.unlock();
+#if defined(_DEBUG)
+		OutputDebugStringA("Update available\n");
 #endif
+	}
 }
 
 
