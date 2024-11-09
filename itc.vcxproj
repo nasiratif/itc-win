@@ -23,32 +23,32 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{b3d9b74b-075c-480e-acb7-513e22afd9dc}</ProjectGuid>
     <RootNamespace>itc</RootNamespace>
-    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -72,31 +72,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)int\</IntDir>
-    <IncludePath>$(SolutionDir)include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)Debug Build\</OutDir>
+    <IntDir>$(SolutionDir)Build\Int\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Lib\x86\;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)int\</IntDir>
-    <IncludePath>$(SolutionDir)include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)Release Build\</OutDir>
+    <IntDir>$(SolutionDir)Build\Int\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Lib\x86\;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)int\</IntDir>
-    <IncludePath>$(SolutionDir)include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)Debug Build\</OutDir>
+    <IntDir>$(SolutionDir)Build\Int\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Lib\x64\;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)int\</IntDir>
-    <IncludePath>$(SolutionDir)include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)Release Build\</OutDir>
+    <IntDir>$(SolutionDir)Build\Int\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Lib\x64\;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,7 +110,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)pdb\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(SolutionDir)PDB\$(Platform)\$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
     </Link>
@@ -134,7 +134,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)pdb\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(SolutionDir)PDB\$(Platform)\$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -155,7 +155,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)pdb\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(SolutionDir)PDB\$(Platform)\$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
     </Link>
@@ -179,7 +179,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)pdb\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(SolutionDir)PDB\$(Platform)\$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
